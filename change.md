@@ -309,6 +309,12 @@ This file records product, UI, data-model, deployment, and documentation changes
   - Security recommendations for firewall and PostgreSQL exposure.
   - Notes about production secrets and MFA.
 
+### README Onboarding
+
+- Added a public workbench screenshot to `docs/assets/traceeverylink-workbench.png`.
+- Added the screenshot to `README.md` so GitHub visitors can immediately see the TraceEveryLink interface.
+- Added a basic usage tutorial covering local startup, admin login, rack selection, search, port selection, patchline creation, and export actions.
+
 ### Backup And Existing Operations Scripts
 
 - Kept `scripts/backup.sh` for encrypted PostgreSQL and photo backup.
