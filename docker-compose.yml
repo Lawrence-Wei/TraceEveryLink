@@ -1,0 +1,77 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-patchplan}
+      POSTGRES_USER: ${POSTGRES_USER:-patchplan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-patchplan}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-patchplan} -d ${POSTGRES_DB:-patchplan}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: builder
+    restart: "no"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-patchplan}:${POSTGRES_PASSWORD:-patchplan}@db:5432/${POSTGRES_DB:-patchplan}?schema=public
+    command: sh -c "npx prisma db push && if [ \"${RUN_SEED:-true}\" = \"true\" ]; then npm run db:seed; fi"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-patchplan}:${POSTGRES_PASSWORD:-patchplan}@db:5432/${POSTGRES_DB:-patchplan}?schema=public
+      PHOTO_STORAGE_DIR: /app/storage/photos
+    volumes:
+      - photo_storage:/app/storage/photos
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/login').then((r) => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  photo_storage:
+  caddy_data:
+  caddy_config:

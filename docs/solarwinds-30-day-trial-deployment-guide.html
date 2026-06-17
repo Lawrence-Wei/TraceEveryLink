@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SolarWinds 30-Day Trial 部署测试教程</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --paper: #ffffff;
+      --ink: #1d2733;
+      --muted: #607080;
+      --line: #d9e1ea;
+      --accent: #0f6b7d;
+      --accent-2: #c7472f;
+      --code-bg: #101820;
+      --code-ink: #e8f0f2;
+      --table-head: #edf5f7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    .document {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 16px 40px rgba(28, 40, 52, 0.08);
+      overflow: hidden;
+    }
+
+    header {
+      padding: 36px 44px 30px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f2f8fa 100%);
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      color: #13212b;
+    }
+
+    .meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      padding: 34px 44px 44px;
+    }
+
+    h2 {
+      margin: 34px 0 12px;
+      padding-top: 10px;
+      font-size: 24px;
+      line-height: 1.25;
+      color: #16313a;
+      border-top: 1px solid var(--line);
+      letter-spacing: 0;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 19px;
+      line-height: 1.3;
+      color: #203640;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(15, 107, 125, 0.25);
+    }
+
+    a:hover {
+      border-bottom-color: var(--accent);
+    }
+
+    .note {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent-2);
+      background: #fff4f1;
+      color: #5a2419;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 22px;
+      font-size: 15px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 9px 11px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--table-head);
+      color: #18323b;
+      font-weight: 700;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background: #eef3f5;
+      color: #18323b;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.94em;
+    }
+
+    pre {
+      margin: 14px 0 22px;
+      padding: 16px;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 6px;
+      border: 1px solid #263442;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border-radius: 0;
+      font-size: inherit;
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 18px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    .checklist {
+      background: #f8fbfc;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 14px 0 22px;
+    }
+
+    .toc {
+      columns: 2;
+      column-gap: 36px;
+      margin: 16px 0 24px;
+      padding: 16px 18px;
+      background: #f8fbfc;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .toc a {
+      display: block;
+      margin: 3px 0;
+      break-inside: avoid;
+    }
+
+    footer {
+      padding: 20px 44px 28px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      background: #fbfcfd;
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 12px;
+      }
+
+      header,
+      main,
+      footer {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      header h1 {
+        font-size: 26px;
+      }
+
+      h2 {
+        font-size: 21px;
+      }
+
+      .toc {
+        columns: 1;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+
+      .document {
+        border: 0;
+        box-shadow: none;
+      }
+
+      a {
+        color: #000;
+        border-bottom: 0;
+      }
+
+      h2 {
+        page-break-after: avoid;
+      }
+
+      pre,
+      table {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <article class="document">
+      <header>
+        <h1>SolarWinds 30-Day Trial 部署测试教程</h1>
+        <p class="meta">版本日期：2026-06-16</p>
+        <p class="meta">适用目标：在实验环境部署 SolarWinds Observability Self-Hosted / Network Performance Monitoring 30 天试用版，用于测试 Cisco 交换机监控、接口流量、Syslog、SNMP Trap、告警和配置备份能力。</p>
+      </header>
+
+      <main>
+        <p class="note">本教程只覆盖合法 30 天试用和采购前评估流程。不要把 SolarWinds 平台暴露到公网，不要使用破解授权。</p>
+
+        <section class="toc" aria-label="目录">
+          <a href="#official">1. 官方资料入口</a>
+          <a href="#goal">2. 本次实验目标</a>
+          <a href="#topology">3. 实验拓扑建议</a>
+          <a href="#server">4. 服务器规格</a>
+          <a href="#windows">5. Windows Server 预配置</a>
+          <a href="#ports">6. 网络端口规划</a>
+          <a href="#download">7. 下载 SolarWinds 试用版</a>
+          <a href="#install">8. 安装 SolarWinds Platform</a>
+          <a href="#wizard">9. Configuration Wizard</a>
+          <a href="#login">10. 首次登录和基础设置</a>
+          <a href="#snmp">11. Cisco 交换机 SNMP 配置</a>
+          <a href="#discovery">12. 添加第一台 Cisco 设备</a>
+          <a href="#verify">13. 验证节点监控</a>
+          <a href="#syslog">14. 配置 Syslog</a>
+          <a href="#trap">15. 配置 SNMP Trap</a>
+          <a href="#ncm">16. 测试 NCM 配置备份</a>
+          <a href="#alerts">17. 告警测试</a>
+          <a href="#dashboard">18. Dashboard 建议</a>
+          <a href="#plan">19. 30 天测试计划</a>
+          <a href="#purchase">20. 采购前需要统计的数据</a>
+          <a href="#troubleshooting">21. 常见问题排查</a>
+          <a href="#security">22. 安全建议</a>
+          <a href="#checklist">23. 最小可执行部署清单</a>
+          <a href="#naming">24. 建议命名规范</a>
+          <a href="#conclusion">25. 试用结束前的结论模板</a>
+        </section>
+
+        <h2 id="official">1. 官方资料入口</h2>
+        <p>部署前建议先打开下面几个官方页面，后面排错会用到：</p>
+        <table>
+          <thead>
+            <tr><th>用途</th><th>链接</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>30 天试用下载</td><td><a href="https://www.solarwinds.com/network-performance-monitor/registration">SolarWinds Network Performance Monitoring Trial</a></td></tr>
+            <tr><td>新环境安装指南</td><td><a href="https://documentation.solarwinds.com/en/success_center/orionplatform/content/install-new-deployment.htm">Install SolarWinds Platform products in a new environment</a></td></tr>
+            <tr><td>2026.1 系统要求</td><td><a href="https://documentation.solarwinds.com/en/success_center/orionplatform/content/system_requirements/solarwinds_platform_2026-1_system_requirements.htm">SolarWinds Platform 2026.1 system requirements</a></td></tr>
+            <tr><td>NPM 2026.1 要求</td><td><a href="https://documentation.solarwinds.com/en/success_center/npm/content/system_requirements/npm_2026-1_system_requirements.htm">NPM 2026.1 system requirements</a></td></tr>
+            <tr><td>授权模型</td><td><a href="https://documentation.solarwinds.com/en/success_center/orionplatform/content/orion_platform_licensing_model.htm">SolarWinds Observability Self-Hosted licensing model</a></td></tr>
+          </tbody>
+        </table>
+        <p>当前官方说明里，NPM 2026.1 运行在 SolarWinds Platform 2026.1 上；试用版为全功能 30 天。试用版适合功能验证，不建议作为生产基础。</p>
+
+        <h2 id="goal">2. 本次实验目标</h2>
+        <ol>
+          <li>添加 Cisco 交换机节点。</li>
+          <li>通过 SNMPv3 采集设备状态、CPU、Memory、接口流量。</li>
+          <li>对关键接口做 up/down 告警。</li>
+          <li>接收 Cisco Syslog。</li>
+          <li>接收 SNMP Trap。</li>
+          <li>测试 NCM 配置备份和配置变更记录。</li>
+          <li>统计真实需要购买的 node/interface/license 规模。</li>
+        </ol>
+        <p>建议先监控 3 到 10 台核心/汇聚/接入交换机，不要第一天就扫全网。</p>
+
+        <h2 id="topology">3. 实验拓扑建议</h2>
+        <pre><code>                         Management VLAN
+                                |
+              +-----------------+-----------------+
+              |                                   |
+      +-------+--------+                  +-------+--------+
+      | SolarWinds VM  |                  | Cisco Switches |
+      | SWLAB01        |                  | Core/Access    |
+      | 10.10.10.50    |                  | 10.10.10.x     |
+      +----------------+                  +----------------+
+
+SolarWinds -> Cisco:
+  ICMP
+  UDP/161 SNMP
+  UDP/162 Trap, optional
+  UDP/514 Syslog, optional
+  TCP/22 SSH for NCM backup, optional</code></pre>
+
+        <h2 id="server">4. 服务器规格</h2>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>建议值</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>VM 名称</td><td><code>SWLAB01</code></td></tr>
+            <tr><td>OS</td><td>Windows Server 2022 Standard / Datacenter</td></tr>
+            <tr><td>CPU</td><td>4 vCPU</td></tr>
+            <tr><td>RAM</td><td>16 GB</td></tr>
+            <tr><td>Disk</td><td>120 GB SSD，薄置备也可以，但不要低于 100 GB</td></tr>
+            <tr><td>Network</td><td>1 张网卡，接入管理 VLAN</td></tr>
+            <tr><td>IP</td><td>静态 IP，例如 <code>10.10.10.50/24</code></td></tr>
+            <tr><td>DNS</td><td>使用内网 DNS 或可靠 DNS</td></tr>
+            <tr><td>SQL</td><td>实验用本机 SQL Server Express</td></tr>
+            <tr><td>浏览器</td><td>Edge / Chrome</td></tr>
+          </tbody>
+        </table>
+        <p>官方 small deployment 的最低建议是 4 CPU、16 GB RAM、100 GB SSD。生产环境应使用独立 SQL Server，不建议用 SQL Server Express。</p>
+        <table>
+          <thead>
+            <tr><th>不建议/不支持</th><th>原因</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Domain Controller</td><td>SolarWinds Platform 产品不应安装在 DC 上</td></tr>
+            <tr><td>Exchange / SharePoint</td><td>官方明确限制</td></tr>
+            <tr><td>公网服务器</td><td>官方建议不要 internet-facing</td></tr>
+            <tr><td>日常办公 Windows 10/11</td><td>只适合临时评估，不适合迁移到生产</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="windows">5. Windows Server 预配置</h2>
+        <h3>5.1 设置主机名</h3>
+        <pre><code>Rename-Computer -NewName "SWLAB01" -Restart</code></pre>
+        <p>重启后确认：</p>
+        <pre><code>hostname</code></pre>
+
+        <h3>5.2 设置静态 IP</h3>
+        <pre><code>IP Address: 10.10.10.50
+Subnet Mask: 255.255.255.0
+Default Gateway: 10.10.10.1
+DNS: 10.10.10.10</code></pre>
+        <p>检查：</p>
+        <pre><code>ipconfig /all
+ping 10.10.10.1
+ping &lt;Cisco交换机管理IP&gt;</code></pre>
+
+        <h3>5.3 时间同步</h3>
+        <pre><code>w32tm /query /status</code></pre>
+        <p>如果是域环境，建议使用域时间源。独立实验环境也要保证 Windows 和 Cisco 交换机时间基本一致。</p>
+
+        <h3>5.4 更新系统</h3>
+        <p>安装前先跑 Windows Update，避免 .NET、IIS、证书组件缺失导致安装失败。</p>
+
+        <h3>5.5 登录账号权限</h3>
+        <p>安装时使用本地 Administrator 或具有本地管理员权限的域账号。</p>
+
+        <h2 id="ports">6. 网络端口规划</h2>
+        <h3>6.1 SolarWinds Web Console</h3>
+        <table>
+          <thead>
+            <tr><th>方向</th><th>端口</th><th>说明</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>管理员电脑 -> SolarWinds</td><td>TCP/443</td><td>Web Console，推荐 HTTPS</td></tr>
+            <tr><td>管理员电脑 -> SolarWinds</td><td>TCP/80</td><td>HTTP，不推荐长期使用</td></tr>
+          </tbody>
+        </table>
+        <h3>6.2 SolarWinds 到 Cisco</h3>
+        <table>
+          <thead>
+            <tr><th>方向</th><th>端口</th><th>说明</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SolarWinds -> Cisco</td><td>ICMP</td><td>节点可达性</td></tr>
+            <tr><td>SolarWinds -> Cisco</td><td>UDP/161</td><td>SNMP polling</td></tr>
+            <tr><td>Cisco -> SolarWinds</td><td>UDP/162</td><td>SNMP Trap</td></tr>
+            <tr><td>Cisco -> SolarWinds</td><td>UDP/514</td><td>Syslog</td></tr>
+            <tr><td>SolarWinds -> Cisco</td><td>TCP/22</td><td>SSH，用于 NCM 配置备份</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="download">7. 下载 SolarWinds 试用版</h2>
+        <ol>
+          <li>打开 <a href="https://www.solarwinds.com/network-performance-monitor/registration">SolarWinds Trial 注册页面</a>。</li>
+          <li>填写公司邮箱、姓名、电话、国家、公司等信息。</li>
+          <li>下载安装器。</li>
+          <li>将 installer 放到 SolarWinds 服务器本地目录，例如 <code>C:\Install\SolarWinds\</code>。</li>
+        </ol>
+        <p>不要从第三方下载 SolarWinds 安装包。</p>
+
+        <h2 id="install">8. 安装 SolarWinds Platform</h2>
+        <h3>8.1 启动安装器</h3>
+        <p>右键 installer，选择 <code>Run as administrator</code>。</p>
+
+        <h3>8.2 安装向导选择</h3>
+        <table>
+          <thead>
+            <tr><th>页面</th><th>选择</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Welcome</td><td>Start</td></tr>
+            <tr><td>Installation Type</td><td>Standard Platform</td></tr>
+            <tr><td>License Agreement</td><td>勾选同意后 Next</td></tr>
+            <tr><td>SQL Server</td><td>Install SQL Server Express</td></tr>
+            <tr><td>Language</td><td>English 或 Simplified Chinese</td></tr>
+            <tr><td>Install Path</td><td>默认路径即可</td></tr>
+            <tr><td>System Check</td><td>先处理 Critical，再继续</td></tr>
+          </tbody>
+        </table>
+        <p><code>Install SQL Server Express</code> 适合实验环境。如果要未来转生产，建议从一开始就用独立 SQL Server Standard/Enterprise。</p>
+
+        <h3>8.3 等待安装完成</h3>
+        <p>安装时间取决于服务器性能和网络速度，通常 30 到 90 分钟。期间不要重启服务器，不要关闭 installer。</p>
+
+        <h2 id="wizard">9. Configuration Wizard</h2>
+        <table>
+          <thead>
+            <tr><th>页面</th><th>建议</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Welcome</td><td>Next</td></tr>
+            <tr><td>Stop Services</td><td>Yes</td></tr>
+            <tr><td>Database Settings</td><td>使用安装器创建的本地 SQL Express</td></tr>
+            <tr><td>Database Account</td><td>默认或按向导创建</td></tr>
+            <tr><td>Website Settings</td><td><code>All Unassigned</code></td></tr>
+            <tr><td>Protocol</td><td>HTTPS</td></tr>
+            <tr><td>Port</td><td>443</td></tr>
+            <tr><td>Certificate</td><td>没有正式证书时选择生成 self-signed certificate</td></tr>
+            <tr><td>Services</td><td>默认全选</td></tr>
+            <tr><td>SNMP Trap Service 提示</td><td>允许 SolarWinds Trap Service</td></tr>
+          </tbody>
+        </table>
+        <p>完成后访问：</p>
+        <pre><code>https://&lt;SolarWinds服务器IP&gt;</code></pre>
+        <p>示例：</p>
+        <pre><code>https://10.10.10.50</code></pre>
+
+        <h2 id="login">10. 首次登录和基础设置</h2>
+        <ol>
+          <li>创建管理员账号。</li>
+          <li>设置强密码。</li>
+          <li>确认 License Manager 中 trial 已启用。</li>
+          <li>设置时区和显示偏好。</li>
+          <li>进入 <code>Settings &gt; All Settings</code> 熟悉菜单。</li>
+        </ol>
+        <table>
+          <thead>
+            <tr><th>账号</th><th>用途</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>admin</code></td><td>平台管理员</td></tr>
+            <tr><td><code>netops-view</code></td><td>只读查看账号，用于体验权限控制</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="snmp">11. Cisco 交换机 SNMP 配置</h2>
+        <h3>11.1 SNMPv3 推荐配置</h3>
+        <table>
+          <thead>
+            <tr><th>占位符</th><th>含义</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>&lt;SolarWinds服务器IP&gt;</code></td><td>SolarWinds VM 的 IP</td></tr>
+            <tr><td><code>&lt;AuthPassword&gt;</code></td><td>SNMPv3 认证密码</td></tr>
+            <tr><td><code>&lt;PrivPassword&gt;</code></td><td>SNMPv3 加密密码</td></tr>
+          </tbody>
+        </table>
+        <pre><code>conf t
+
+ip access-list standard SOLARWINDS-SNMP
+ permit &lt;SolarWinds服务器IP&gt;
+exit
+
+snmp-server view SWVIEW iso included
+snmp-server group SWGROUP v3 priv read SWVIEW access SOLARWINDS-SNMP
+snmp-server user swpoll SWGROUP v3 auth sha &lt;AuthPassword&gt; priv aes 128 &lt;PrivPassword&gt;
+
+snmp-server location Shanghai
+snmp-server contact Network-Team
+
+end
+write memory</code></pre>
+
+        <h3>11.2 SNMPv2c 临时配置</h3>
+        <pre><code>conf t
+
+ip access-list standard SOLARWINDS-SNMP
+ permit &lt;SolarWinds服务器IP&gt;
+exit
+
+snmp-server community &lt;CommunityString&gt; RO SOLARWINDS-SNMP
+snmp-server location Shanghai
+snmp-server contact Network-Team
+
+end
+write memory</code></pre>
+        <p>SNMPv2c community 等同明文口令，不建议长期使用。</p>
+
+        <h3>11.3 验证 SNMP ACL 命中</h3>
+        <pre><code>show snmp
+show access-lists SOLARWINDS-SNMP</code></pre>
+
+        <h2 id="discovery">12. 添加第一台 Cisco 设备</h2>
+        <p>SolarWinds Web Console：</p>
+        <pre><code>Settings &gt; Network Discovery &gt; Add New Discovery</code></pre>
+        <table>
+          <thead>
+            <tr><th>页面</th><th>配置</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Network</td><td>Specific Nodes</td></tr>
+            <tr><td>IP</td><td>填 Cisco 管理 IP</td></tr>
+            <tr><td>Agents</td><td>跳过</td></tr>
+            <tr><td>Virtualization</td><td>跳过</td></tr>
+            <tr><td>SNMP Credentials</td><td>添加 SNMPv3 或 SNMPv2c</td></tr>
+            <tr><td>Windows Credentials</td><td>不需要</td></tr>
+            <tr><td>Monitoring Settings</td><td>默认</td></tr>
+            <tr><td>Discovery Scheduling</td><td>Run once now</td></tr>
+          </tbody>
+        </table>
+        <p>Discovery 完成后，导入 Node、CPU、Memory、Hardware Health 和关键 Interfaces。</p>
+        <table>
+          <thead>
+            <tr><th>接口类型</th><th>是否建议导入</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Uplink</td><td>是</td></tr>
+            <tr><td>Core/Distribution link</td><td>是</td></tr>
+            <tr><td>CATO/WAN link</td><td>是</td></tr>
+            <tr><td>Port-channel</td><td>是</td></tr>
+            <tr><td>普通用户接入口</td><td>先不要全部导入</td></tr>
+            <tr><td>shutdown 接口</td><td>不导入</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="verify">13. 验证节点监控</h2>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>正常表现</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Node Status</td><td>Up</td></tr>
+            <tr><td>Response Time</td><td>有曲线</td></tr>
+            <tr><td>Packet Loss</td><td>有曲线或 0%</td></tr>
+            <tr><td>CPU Load</td><td>有数据</td></tr>
+            <tr><td>Memory Used</td><td>有数据</td></tr>
+            <tr><td>Interfaces</td><td>有流量图</td></tr>
+            <tr><td>Hardware Health</td><td>能识别则显示温度、电源、风扇等</td></tr>
+          </tbody>
+        </table>
+        <p>如果接口流量图为空，先等 10 到 20 分钟。SNMP polling 需要几个周期才会出现趋势。</p>
+
+        <h2 id="syslog">14. 配置 Syslog</h2>
+        <h3>14.1 Cisco 侧配置</h3>
+        <pre><code>conf t
+
+logging host &lt;SolarWinds服务器IP&gt;
+logging trap warnings
+logging source-interface Vlan&lt;管理VLAN号&gt;
+service timestamps log datetime localtime show-timezone
+
+end
+write memory</code></pre>
+        <p>如果不确定 source-interface，可以先不配，等收到日志后再规范。</p>
+
+        <h3>14.2 测试 Syslog</h3>
+        <p>可以先在特权模式发送一条低风险测试日志：</p>
+        <pre><code>send log SolarWinds syslog test from lab switch</code></pre>
+        <p>更实际的测试方式是在实验接口上执行：</p>
+        <pre><code>conf t
+interface GigabitEthernetX/Y/Z
+ shutdown
+ no shutdown
+end</code></pre>
+        <p>只在测试接口做，不要在生产业务接口做。SolarWinds 中查看 <code>Alerts &amp; Activity &gt; Log Viewer</code>。</p>
+
+        <h2 id="trap">15. 配置 SNMP Trap</h2>
+        <h3>15.1 SNMPv3 Trap</h3>
+        <pre><code>conf t
+
+snmp-server host &lt;SolarWinds服务器IP&gt; version 3 priv swpoll
+snmp-server enable traps
+
+end
+write memory</code></pre>
+
+        <h3>15.2 SNMPv2c Trap</h3>
+        <pre><code>conf t
+
+snmp-server host &lt;SolarWinds服务器IP&gt; version 2c &lt;CommunityString&gt;
+snmp-server enable traps
+
+end
+write memory</code></pre>
+        <p>如果收不到 Trap，检查 Cisco 到 SolarWinds 的 UDP/162、Windows 防火墙、SolarWinds Trap Service 和 SNMPv3 用户参数。</p>
+
+        <h2 id="ncm">16. 测试 NCM 配置备份</h2>
+        <h3>16.1 Cisco SSH 基础配置</h3>
+        <p>如果交换机已经有 AAA/SSH，先不要照抄覆盖。下面只是实验模板：</p>
+        <pre><code>conf t
+
+ip domain-name example.local
+crypto key generate rsa modulus 2048
+ip ssh version 2
+
+username swbackup privilege 15 secret &lt;StrongPassword&gt;
+
+line vty 0 15
+ transport input ssh
+ login local
+
+end
+write memory</code></pre>
+        <p>如果生产设备已经接入 TACACS+/RADIUS，应该让 SolarWinds 使用正式的网络设备管理账号，不要随意改 AAA。</p>
+
+        <h3>16.2 SolarWinds 添加 NCM 凭据</h3>
+        <pre><code>Settings &gt; All Settings &gt; NCM Settings &gt; Device Login Credentials</code></pre>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>示例</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Credential Name</td><td>Cisco-SSH-Backup</td></tr>
+            <tr><td>Username</td><td><code>swbackup</code></td></tr>
+            <tr><td>Password</td><td><code>&lt;StrongPassword&gt;</code></td></tr>
+            <tr><td>Enable Level</td><td>如需要则填写 enable secret</td></tr>
+            <tr><td>Protocol</td><td>SSH</td></tr>
+            <tr><td>Port</td><td>22</td></tr>
+          </tbody>
+        </table>
+
+        <h3>16.3 测试配置下载</h3>
+        <pre><code>Node Details &gt; Management / Configs &gt; Download Config</code></pre>
+        <p>或创建定时任务：</p>
+        <pre><code>Settings &gt; NCM Settings &gt; Jobs &gt; Create New Job</code></pre>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>建议</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Job Type</td><td>Download Configs</td></tr>
+            <tr><td>Nodes</td><td>先选测试交换机</td></tr>
+            <tr><td>Schedule</td><td>Daily, 02:00</td></tr>
+            <tr><td>Config Type</td><td>Running + Startup</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="alerts">17. 告警测试</h2>
+        <table>
+          <thead>
+            <tr><th>告警</th><th>测试方式</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Node Down</td><td>测试设备断开管理网，或用测试节点模拟</td></tr>
+            <tr><td>Interface Down</td><td>在测试接口 <code>shutdown</code></td></tr>
+            <tr><td>High CPU</td><td>一般不建议人为打高生产设备 CPU</td></tr>
+            <tr><td>High Memory</td><td>观察即可</td></tr>
+            <tr><td>Interface Errors/Discards</td><td>找已有错误接口验证</td></tr>
+            <tr><td>Config Changed</td><td>改一行 description 后保存</td></tr>
+            <tr><td>Syslog Contains Suspended</td><td>用 EtherChannel suspend 日志触发规则</td></tr>
+          </tbody>
+        </table>
+        <p>不要对所有接口都启用 Interface Down 告警。建议只对 Uplink、WAN/CATO、Firewall link、Server trunk、Port-channel、核心互联启用。</p>
+        <p>可关注的 Syslog 关键字：</p>
+        <pre><code>LINEPROTO
+LINK
+EC
+ETHERCHANNEL
+SUSPENDED
+STP
+ERRDISABLE</code></pre>
+
+        <h2 id="dashboard">18. Dashboard 建议</h2>
+        <p>建议建立一个 <code>Network Operations - Shanghai</code> 页面，放这些组件：</p>
+        <table>
+          <thead>
+            <tr><th>区域</th><th>内容</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Top Left</td><td>当前 Down Nodes</td></tr>
+            <tr><td>Top Right</td><td>当前 Active Alerts</td></tr>
+            <tr><td>Middle</td><td>Critical Interfaces</td></tr>
+            <tr><td>Middle</td><td>Top 10 Interfaces by Utilization</td></tr>
+            <tr><td>Middle</td><td>Top 10 Errors/Discards</td></tr>
+            <tr><td>Bottom</td><td>Recent Syslog</td></tr>
+            <tr><td>Bottom</td><td>Recent Config Changes</td></tr>
+          </tbody>
+        </table>
+        <pre><code>Shanghai-Core
+Shanghai-Access
+Shanghai-CATO
+Shanghai-Firewall</code></pre>
+
+        <h2 id="plan">19. 30 天测试计划</h2>
+        <table>
+          <thead>
+            <tr><th>时间</th><th>任务</th><th>输出物</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>第 1 天</td><td>安装 SolarWinds，创建 admin，确认 Web Console</td><td>安装截图、访问 URL</td></tr>
+            <tr><td>第 2 天</td><td>配置 1 台 Cisco SNMPv3，Discovery 导入</td><td>节点详情截图</td></tr>
+            <tr><td>第 3 天</td><td>导入关键接口，观察流量</td><td>接口流量截图</td></tr>
+            <tr><td>第 4-5 天</td><td>添加 3 到 5 台设备</td><td>节点列表</td></tr>
+            <tr><td>第 6-7 天</td><td>配置 Syslog 和 Trap</td><td>Log Viewer 截图</td></tr>
+            <tr><td>第 8-10 天</td><td>配置接口 Down / Node Down 告警</td><td>告警触发截图</td></tr>
+            <tr><td>第 11-14 天</td><td>配置 NCM SSH 凭据和配置备份</td><td>running-config 备份记录</td></tr>
+            <tr><td>第 15-18 天</td><td>测试配置变更记录</td><td>Config diff 截图</td></tr>
+            <tr><td>第 19-22 天</td><td>优化 Dashboard</td><td>Dashboard 截图</td></tr>
+            <tr><td>第 23-25 天</td><td>生成可用性/接口流量报表</td><td>PDF/报表截图</td></tr>
+            <tr><td>第 26-28 天</td><td>统计节点、接口、功能需求</td><td>授权需求表</td></tr>
+            <tr><td>第 29-30 天</td><td>总结是否采购</td><td>评估结论</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="purchase">20. 采购前需要统计的数据</h2>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>示例</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>需要监控的网络设备数量</td><td>80 台</td></tr>
+            <tr><td>只 Ping 的节点数量</td><td>20 台</td></tr>
+            <tr><td>需要 SNMP 的节点数量</td><td>60 台</td></tr>
+            <tr><td>需要监控的接口数量</td><td>300 个</td></tr>
+            <tr><td>需要 NCM 备份的设备数量</td><td>60 台</td></tr>
+            <tr><td>需要 Syslog 的设备数量</td><td>60 台</td></tr>
+            <tr><td>需要 Trap 的设备数量</td><td>60 台</td></tr>
+            <tr><td>同时登录 SolarWinds 的用户数</td><td>5 到 10 人</td></tr>
+            <tr><td>是否需要 HA</td><td>是/否</td></tr>
+            <tr><td>是否需要 Additional Polling Engine</td><td>是/否</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="troubleshooting">21. 常见问题排查</h2>
+        <h3>21.1 安装器 System Check 失败</h3>
+        <pre><code>RAM 是否低于 16 GB
+磁盘是否低于 100 GB
+是否装在 Domain Controller
+Windows Update 是否未完成
+是否缺少重启
+是否没有管理员权限</code></pre>
+
+        <h3>21.2 Web Console 打不开</h3>
+        <pre><code>Get-Service *SolarWinds*
+Get-Service W3SVC
+netstat -ano | findstr ":443"</code></pre>
+        <pre><code>https://localhost
+https://&lt;SolarWinds服务器IP&gt;</code></pre>
+
+        <h3>21.3 SNMP Discovery 失败</h3>
+        <pre><code>SolarWinds 能否 ping 通交换机管理 IP
+Cisco ACL 是否 permit SolarWinds IP
+SNMPv3 auth/priv 密码是否一致
+SNMPv3 group 是否是 priv
+UDP/161 是否被防火墙阻断
+交换机是否使用了正确的 VRF/管理接口</code></pre>
+        <pre><code>show snmp
+show access-lists SOLARWINDS-SNMP
+show run | include snmp-server</code></pre>
+
+        <h3>21.4 接口没有流量图</h3>
+        <pre><code>等待 10 到 20 分钟
+确认导入的是正确接口
+确认接口状态 up/up
+确认 SNMP ifHCInOctets/ifHCOutOctets 能被读取
+确认没有只选择 Node 而没选择 Interface</code></pre>
+
+        <h3>21.5 收不到 Syslog</h3>
+        <pre><code>Cisco logging host 是否正确
+logging trap 级别是否太高
+UDP/514 是否被 Windows 防火墙挡住
+SolarWinds Syslog Service 是否运行
+source-interface 是否可达 SolarWinds</code></pre>
+        <pre><code>show logging
+show run | include logging</code></pre>
+
+        <h3>21.6 NCM 备份失败</h3>
+        <pre><code>SolarWinds 到 Cisco TCP/22 是否通
+SSH 用户名密码是否正确
+账号 privilege 是否足够
+enable secret 是否需要填写
+设备模板是否识别正确
+AAA/TACACS 是否限制了 SolarWinds 来源 IP</code></pre>
+        <pre><code>show ip ssh
+show users
+show logging | include SSH</code></pre>
+
+        <h2 id="security">22. 安全建议</h2>
+        <ol>
+          <li>SolarWinds 服务器不要暴露到公网。</li>
+          <li>SNMP 优先用 SNMPv3。</li>
+          <li>SNMP ACL 只允许 SolarWinds 服务器 IP。</li>
+          <li>Web Console 使用 HTTPS。</li>
+          <li>管理员账号使用强密码。</li>
+          <li>NCM 备份账号单独创建，避免共用个人账号。</li>
+          <li>定期导出测试报告，不要把真实密码写进文档。</li>
+          <li>测试接口 shutdown/no shutdown 前确认不是生产链路。</li>
+        </ol>
+
+        <h2 id="checklist">23. 最小可执行部署清单</h2>
+        <div class="checklist">
+          <p><strong>部署前</strong></p>
+          <pre><code>[ ] Windows Server 2022 VM 已创建
+[ ] 4 vCPU / 16 GB RAM / 120 GB SSD
+[ ] 静态 IP 已配置
+[ ] 能 ping 到 Cisco 管理 IP
+[ ] Windows Update 完成
+[ ] SolarWinds installer 已下载</code></pre>
+
+          <p><strong>安装中</strong></p>
+          <pre><code>[ ] Run as administrator
+[ ] Standard Platform
+[ ] Install SQL Server Express
+[ ] HTTPS 443
+[ ] Configuration Wizard 完成</code></pre>
+
+          <p><strong>Cisco</strong></p>
+          <pre><code>[ ] SNMPv3 配置完成
+[ ] ACL permit SolarWinds IP
+[ ] Syslog host 配置完成
+[ ] Trap host 配置完成
+[ ] SSH/NCM 账号配置完成</code></pre>
+
+          <p><strong>SolarWinds</strong></p>
+          <pre><code>[ ] Discovery 成功
+[ ] Node Up
+[ ] CPU/Memory 有数据
+[ ] 关键接口有流量
+[ ] Syslog 有日志
+[ ] Trap 有事件
+[ ] NCM 能下载配置
+[ ] 告警能触发</code></pre>
+        </div>
+
+        <h2 id="naming">24. 建议命名规范</h2>
+        <h3>24.1 节点 Caption</h3>
+        <pre><code>CN-PIR-SHANGHAI-BB148.2
+CN-PIR-SHANGHAI-CORE01
+CN-PIR-SHANGHAI-ACCESS01</code></pre>
+
+        <h3>24.2 自定义属性</h3>
+        <table>
+          <thead>
+            <tr><th>属性</th><th>示例</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Site</td><td>Shanghai</td></tr>
+            <tr><td>Role</td><td>Core / Access / WAN</td></tr>
+            <tr><td>Vendor</td><td>Cisco</td></tr>
+            <tr><td>Criticality</td><td>High / Medium / Low</td></tr>
+            <tr><td>Owner</td><td>Network</td></tr>
+            <tr><td>Service</td><td>CATO / LAN / WAN</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="conclusion">25. 试用结束前的结论模板</h2>
+        <pre><code>SolarWinds 30-Day Trial 评估结论
+
+评估时间：
+评估人：
+部署版本：
+监控节点数：
+监控接口数：
+测试设备类型：
+
+已验证能力：
+- SNMP 节点监控：
+- 接口流量：
+- CPU/Memory：
+- Syslog：
+- SNMP Trap：
+- NCM 配置备份：
+- 告警：
+- Dashboard：
+- 报表：
+
+主要优点：
+1.
+2.
+3.
+
+主要问题：
+1.
+2.
+3.
+
+采购建议：
+□ 建议采购
+□ 暂缓采购
+□ 改用其他方案
+
+建议授权规模：
+建议服务器规格：
+是否需要 HA：
+是否需要独立 SQL：</code></pre>
+      </main>
+
+      <footer>
+        资料依据 SolarWinds 官方试用、安装、系统要求和授权文档整理；实际界面名称可能随版本小幅变化。
+      </footer>
+    </article>
+  </div>
+</body>
+</html>

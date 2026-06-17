@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  VIEWER
+  SURVEYOR
+  REVIEWER
+  ADMIN
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  GITHUB
+  CISCO
+}
+
+enum DeviceType {
+  CISCO_CATALYST
+  PATCH_PANEL
+  WALL_OUTLET
+  SERVER
+  AP
+  FIREWALL
+  OTHER
+}
+
+enum PortType {
+  RJ45
+  SFP
+  SFP_PLUS
+  QSFP
+  LC
+  MPO
+  VIRTUAL
+}
+
+enum CableMedia {
+  COPPER
+  FIBER
+  DAC
+  OTHER
+}
+
+enum CableStatus {
+  planned
+  draft
+  pending_verification
+  confirmed
+  faulty
+  retired
+}
+
+enum PrintProtocol {
+  HTTP_JSON
+  HTTP_ZPL
+  HTTP_TSPL
+}
+
+enum PrintJobStatus {
+  queued
+  sent
+  failed
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(VIEWER)
+  mfaSecret    String?
+  mfaEnabled   Boolean    @default(true)
+  accounts     Account[]
+  sessions     Session[]
+  audits       AuditLog[]
+  uploads      Photo[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Account {
+  id                String       @id @default(cuid())
+  provider          AuthProvider
+  providerAccountId String
+  email             String?
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  csrfToken String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Rack {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  room      String
+  heightU   Int      @default(42)
+  row       String?
+  position  String?
+  devices   Device[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Device {
+  id        String     @id @default(cuid())
+  rackId    String?
+  rack      Rack?      @relation(fields: [rackId], references: [id], onDelete: SetNull)
+  name      String
+  vendor    String?
+  model     String?
+  type      DeviceType
+  uPosition Int?
+  uHeight   Int        @default(1)
+  face      String     @default("front")
+  serial    String?
+  mgmtIp    String?
+  notes     String?
+  ports     Port[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([rackId])
+  @@index([type])
+}
+
+model Port {
+  id                String   @id @default(cuid())
+  deviceId          String
+  device            Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  name              String
+  label             String?
+  type              PortType @default(RJ45)
+  speed             String?
+  poeEnabled        Boolean  @default(false)
+  status            String   @default("unknown")
+  stack             Int?
+  module            Int?
+  portNumber        Int?
+  discoveryProtocol String?
+  discoveryNeighbor String?
+  snmpIfIndex       Int?
+  notes             String?
+  mappedPortId      String?  @unique
+  mappedPort        Port?    @relation("PortMapping", fields: [mappedPortId], references: [id])
+  mappedFrom        Port?    @relation("PortMapping")
+  cableA            Cable[]  @relation("CableEndpointA")
+  cableB            Cable[]  @relation("CableEndpointB")
+  photos            Photo[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([deviceId, name])
+  @@index([mappedPortId])
+}
+
+model Cable {
+  id              String      @id @default(cuid())
+  cableId         String      @unique
+  label           String
+  status          CableStatus @default(draft)
+  media           CableMedia  @default(COPPER)
+  color           String?
+  lengthM         Float?
+  endpointAPortId String
+  endpointAPort   Port        @relation("CableEndpointA", fields: [endpointAPortId], references: [id], onDelete: Restrict)
+  endpointBPortId String
+  endpointBPort   Port        @relation("CableEndpointB", fields: [endpointBPortId], references: [id], onDelete: Restrict)
+  notes           String?
+  lldpSnapshot    Json?
+  cdpSnapshot     Json?
+  createdById     String?
+  verifiedById    String?
+  verifiedAt      DateTime?
+  photos          Photo[]
+  printItems      PrintJobItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([status])
+  @@index([endpointAPortId])
+  @@index([endpointBPortId])
+}
+
+model LabelPrinter {
+  id        String        @id @default(cuid())
+  name      String
+  protocol  PrintProtocol @default(HTTP_JSON)
+  endpoint  String
+  apiKey    String?
+  enabled   Boolean       @default(true)
+  notes     String?
+  jobs      PrintJob[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model PrintJob {
+  id          String         @id @default(cuid())
+  printerId   String
+  printer     LabelPrinter   @relation(fields: [printerId], references: [id], onDelete: Restrict)
+  status      PrintJobStatus @default(queued)
+  requestedBy String?
+  copies      Int            @default(1)
+  payload     Json?
+  response    Json?
+  error       String?
+  items       PrintJobItem[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([printerId])
+  @@index([status])
+}
+
+model PrintJobItem {
+  id         String   @id @default(cuid())
+  jobId      String
+  job        PrintJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  cableId    String
+  cable      Cable    @relation(fields: [cableId], references: [id], onDelete: Restrict)
+  labelText  String
+  qrUrl      String
+  createdAt  DateTime @default(now())
+
+  @@index([jobId])
+  @@index([cableId])
+}
+
+model Photo {
+  id           String   @id @default(cuid())
+  cableId      String?
+  cable        Cable?   @relation(fields: [cableId], references: [id], onDelete: Cascade)
+  portId       String?
+  port         Port?    @relation(fields: [portId], references: [id], onDelete: Cascade)
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  sha256       String
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  createdAt    DateTime @default(now())
+
+  @@index([cableId])
+  @@index([portId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+}

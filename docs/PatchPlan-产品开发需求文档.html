@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>接线镜 / TraceEveryLink 产品开发需求文档</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --brand: #0f766e;
+      --brand-2: #2563eb;
+      --soft: #eef8f6;
+      --warn: #fff7ed;
+      --code: #101828;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--brand-2);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .toc {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 28px 22px;
+      border-right: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .toc h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .toc ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toc li {
+      margin: 7px 0;
+    }
+
+    main {
+      padding: 38px 48px 72px;
+    }
+
+    .document {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(16, 24, 40, 0.08);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 42px 48px 30px;
+      background: linear-gradient(135deg, #ecfeff 0%, #f8fafc 55%, #eef2ff 100%);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero p {
+      max-width: 880px;
+      margin: 14px 0 0;
+      color: #344054;
+      font-size: 18px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 44px 0 16px;
+      padding-top: 4px;
+      font-size: 26px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 28px 0 12px;
+      font-size: 19px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    h4 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+    }
+
+    section {
+      padding: 0 48px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .meta div {
+      padding: 14px;
+      background: rgba(255, 255, 255, .72);
+      border: 1px solid rgba(15, 118, 110, .16);
+      border-radius: 8px;
+    }
+
+    .meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .meta strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin: 18px 0 8px;
+    }
+
+    .summary-grid article,
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 18px;
+    }
+
+    .summary-grid h3 {
+      margin-top: 0;
+    }
+
+    .callout {
+      background: var(--soft);
+      border-color: #b7e4dd;
+    }
+
+    .warning {
+      background: var(--warn);
+      border-color: #fed7aa;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      vertical-align: top;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 700;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #eef2f7;
+      color: var(--code);
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+    }
+
+    pre {
+      overflow: auto;
+      padding: 16px;
+      border-radius: 10px;
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 24px;
+    }
+
+    .flow div {
+      min-height: 94px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfdff;
+    }
+
+    .flow strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--brand);
+    }
+
+    .footer {
+      margin-top: 44px;
+      padding: 28px 48px 40px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        display: block;
+      }
+
+      .toc {
+        position: static;
+        height: auto;
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      .document {
+        border-radius: 8px;
+      }
+
+      .hero,
+      section,
+      .footer {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .meta,
+      .summary-grid,
+      .two-col,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .toc {
+        display: none;
+      }
+
+      main {
+        padding: 0;
+      }
+
+      .document {
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      h2 {
+        page-break-after: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#purpose">文档目的</a></li>
+        <li><a href="#overview">产品概述</a></li>
+        <li><a href="#problems">背景与问题</a></li>
+        <li><a href="#goals">目标与边界</a></li>
+        <li><a href="#users">用户与权限</a></li>
+        <li><a href="#flows">核心流程</a></li>
+        <li><a href="#pages">页面需求</a></li>
+        <li><a href="#features">功能需求</a></li>
+        <li><a href="#apis">API 需求</a></li>
+        <li><a href="#data">数据模型</a></li>
+        <li><a href="#architecture">技术架构</a></li>
+        <li><a href="#security">安全与非功能</a></li>
+        <li><a href="#deployment">部署运维</a></li>
+        <li><a href="#testing">测试验收</a></li>
+        <li><a href="#roadmap">路线图</a></li>
+      </ol>
+    </aside>
+
+    <main>
+      <article class="document">
+        <header class="hero">
+          <p class="eyebrow">Product Requirements Document</p>
+          <h1>接线镜 / TraceEveryLink 产品开发需求文档</h1>
+          <p>面向机房现场的 Cisco 设备接线可视化系统，用于记录、查询、复核和打印交换机、配线架、墙口、AP、服务器之间的物理连接。</p>
+          <div class="meta">
+            <div><span>文档版本</span><strong>v1.0</strong></div>
+            <div><span>产品版本</span><strong>TraceEveryLink v0.1.0</strong></div>
+            <div><span>文档日期</span><strong>2026-06-16</strong></div>
+            <div><span>适用范围</span><strong>产品 / 研发 / 测试 / 运维</strong></div>
+          </div>
+        </header>
+
+        <section id="purpose">
+          <h2>1. 文档目的</h2>
+          <p>本文档将接线镜（TraceEveryLink）的产品定位、业务需求、功能范围、技术栈、数据模型、接口能力、权限规则、部署方式与验收标准整理为一份可执行的开发需求文档。它既可作为当前版本交付说明，也可作为后续迭代的需求基线。</p>
+          <div class="summary-grid">
+            <article>
+              <h3>产品侧</h3>
+              <p>明确目标用户、核心场景、版本边界、成功指标和后续路线图。</p>
+            </article>
+            <article>
+              <h3>研发侧</h3>
+              <p>明确页面交互、API、数据模型、权限、安全、导出、打印和部署要求。</p>
+            </article>
+            <article>
+              <h3>测试与运维</h3>
+              <p>明确验收清单、权限矩阵、异常场景、安全边界、备份和发布标准。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="overview">
+          <h2>2. 产品概述</h2>
+          <p>接线镜（TraceEveryLink）是一个面向机房现场的接线可视化工作台。用户可以通过网页查看机柜、设备、端口和线缆，快速判断某根线从哪里来到哪里去。系统支持手机、Windows 和 Mac 浏览器使用，第一版按照公网部署设计，除登录入口外所有资产、照片、导出和打印能力都需要鉴权访问。</p>
+          <div class="callout">
+            <strong>核心价值：</strong>
+            <ul>
+              <li>降低现场查线和排障时间。</li>
+              <li>把接线数据从 Excel/纸质记录升级为可追踪、可复核的系统记录。</li>
+              <li>通过二维码标签连接物理线缆和数字台账。</li>
+              <li>通过照片、状态和审计日志提升接线可信度。</li>
+              <li>为 LLDP/CDP/SNMP 自动发现、变更审批和资产治理打基础。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="problems">
+          <h2>3. 背景与问题</h2>
+          <div class="two-col">
+            <div>
+              <h3>当前痛点</h3>
+              <ul>
+                <li>线缆台账分散在 Excel、纸质记录和个人经验中。</li>
+                <li>交换机、配线架、墙口、AP、服务器之间缺少统一链路模型。</li>
+                <li>接线变更后缺乏复核流程，台账容易与真实环境偏离。</li>
+                <li>线缆标签只能承载有限文字，无法展示完整路径、照片和状态。</li>
+                <li>公网部署时照片和资产数据不能以静态目录方式裸露。</li>
+              </ul>
+            </div>
+            <div>
+              <h3>产品机会</h3>
+              <ul>
+                <li>用机柜视图提升现场识别效率。</li>
+                <li>用端口级模型建立可信台账。</li>
+                <li>用状态流转区分规划、草稿、待复核、确认、故障和退役。</li>
+                <li>用二维码和标签打印连接物理世界与系统记录。</li>
+                <li>用鉴权、MFA、审计和私有照片满足公网部署要求。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="goals">
+          <h2>4. 目标与边界</h2>
+          <h3>一期目标</h3>
+          <table>
+            <thead><tr><th>目标</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>登录与权限</td><td>支持本地账号、可选 TOTP MFA、Cisco/Google/GitHub OAuth/OIDC，所有业务数据鉴权访问。</td></tr>
+              <tr><td>机柜与端口</td><td>支持机柜、设备、端口、配线架映射和 Cisco Catalyst 风格端口名。</td></tr>
+              <tr><td>线缆管理</td><td>支持端口级线缆记录、状态流转、端点占用校验和审计。</td></tr>
+              <tr><td>路径追踪</td><td>从任意端口计算经过线缆和配线架映射后的完整路径。</td></tr>
+              <tr><td>照片与标签</td><td>支持私有照片、二维码、标签 PDF、Excel/PDF 台账导出。</td></tr>
+              <tr><td>打印与部署</td><td>支持 HTTP JSON/ZPL/TSPL 打印网关，支持 Docker Compose + PostgreSQL + Caddy 部署。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>一期非目标</h3>
+          <table>
+            <thead><tr><th>非目标</th><th>原因</th></tr></thead>
+            <tbody>
+              <tr><td>自动发现真实网络拓扑</td><td>当前版本先建立人工可信台账，自动发现作为后续增强。</td></tr>
+              <tr><td>原生移动 App</td><td>一期以响应式 Web 满足现场手机访问。</td></tr>
+              <tr><td>匿名公开查看页面</td><td>机房资产、照片和连接数据必须受控访问。</td></tr>
+              <tr><td>复杂审批流</td><td>一期用状态流转和角色权限覆盖基础复核。</td></tr>
+              <tr><td>多租户 SaaS</td><td>当前定位为单组织公网或内网部署。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>成功指标</h3>
+          <table>
+            <thead><tr><th>指标</th><th>目标</th></tr></thead>
+            <tbody>
+              <tr><td>查找线缆路径耗时</td><td>相比人工 Excel/纸质记录降低 50% 以上。</td></tr>
+              <tr><td>接线记录覆盖率</td><td>核心机柜/接入机柜线缆记录覆盖率达到 90% 以上。</td></tr>
+              <tr><td>待复核处理时效</td><td>80% 待复核线缆在 2 个工作日内确认。</td></tr>
+              <tr><td>二维码标签绑定率</td><td>新增线缆二维码标签覆盖率达到 95% 以上。</td></tr>
+              <tr><td>数据安全</td><td>未鉴权请求无法访问资产、照片和导出文件。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="users">
+          <h2>5. 用户与权限</h2>
+          <h3>目标用户</h3>
+          <table>
+            <thead><tr><th>用户</th><th>主要任务</th><th>典型场景</th><th>关注点</th></tr></thead>
+            <tbody>
+              <tr><td>网络管理员</td><td>建模、维护接线、确认变更</td><td>新增交换机、调整端口、排障</td><td>准确性、可追溯、权限安全</td></tr>
+              <tr><td>现场工程师</td><td>查线、拍照、提交待复核</td><td>布线、替换线缆、贴标签</td><td>手机可用、快速定位、操作简单</td></tr>
+              <tr><td>复核人员</td><td>审核接线、导出报表、批量打印</td><td>接线完成后复核、出具台账</td><td>状态清晰、批量操作、导出稳定</td></tr>
+              <tr><td>系统管理员</td><td>配置登录、打印机、部署与备份</td><td>公网部署、账号安全、备份恢复</td><td>安全、稳定、可维护</td></tr>
+              <tr><td>审计人员</td><td>查看记录、导出台账</td><td>资产审查、变更追踪</td><td>审计日志、数据完整性</td></tr>
+            </tbody>
+          </table>
+
+          <h3>角色权限</h3>
+          <table>
+            <thead><tr><th>角色</th><th>等级</th><th>权限说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>VIEWER</code></td><td>1</td><td>查看机柜、端口、线缆、照片和二维码。</td></tr>
+              <tr><td><code>SURVEYOR</code></td><td>2</td><td>拥有查看权限；可新增线缆、上传照片、更新普通状态。</td></tr>
+              <tr><td><code>REVIEWER</code></td><td>3</td><td>拥有现场人员权限；可确认线缆、导出 Excel/PDF、导出标签、批量打印。</td></tr>
+              <tr><td><code>ADMIN</code></td><td>4</td><td>拥有全部权限；可删除线缆、配置和删除打印机。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="flows">
+          <h2>6. 核心流程</h2>
+          <h3>登录访问</h3>
+          <div class="flow">
+            <div><strong>1. 访问</strong>未登录用户访问系统，页面跳转到登录页。</div>
+            <div><strong>2. 登录</strong>用户使用本地账号或 OAuth/OIDC 登录。</div>
+            <div><strong>3. 会话</strong>服务端创建会话并写入 HTTP-only Cookie。</div>
+            <div><strong>4. 鉴权</strong>所有资产、照片、导出、打印 API 校验会话。</div>
+          </div>
+
+          <h3>现场查线</h3>
+          <div class="flow">
+            <div><strong>1. 搜索</strong>输入线缆号、设备名、端口名或端点信息。</div>
+            <div><strong>2. 选择</strong>点击线缆列表或机柜端口。</div>
+            <div><strong>3. 查看</strong>右侧展示端口、线缆、路径、照片和二维码。</div>
+            <div><strong>4. 处理</strong>按权限上传照片、改状态、导出标签或打印。</div>
+          </div>
+
+          <h3>新增与复核</h3>
+          <div class="flow">
+            <div><strong>1. 新增</strong><code>SURVEYOR+</code> 输入线缆编号、标签、颜色和 A/B 端口。</div>
+            <div><strong>2. 校验</strong>系统校验端口存在、端点不同、端口未被活动线缆占用。</div>
+            <div><strong>3. 待复核</strong>现场完成后设置为 <code>pending_verification</code>。</div>
+            <div><strong>4. 确认</strong><code>REVIEWER+</code> 设置为 <code>confirmed</code> 并记录复核人。</div>
+          </div>
+
+          <h3>标签打印</h3>
+          <div class="flow">
+            <div><strong>1. 配置</strong><code>ADMIN</code> 配置打印网关。</div>
+            <div><strong>2. 勾选</strong><code>REVIEWER+</code> 勾选需要打印的线缆。</div>
+            <div><strong>3. 发送</strong>系统生成 JSON/ZPL/TSPL 并调用网关。</div>
+            <div><strong>4. 记录</strong>打印任务更新为 <code>sent</code> 或 <code>failed</code>。</div>
+          </div>
+        </section>
+
+        <section id="pages">
+          <h2>7. 页面需求</h2>
+          <h3>登录页 <code>/login</code></h3>
+          <ul>
+            <li>提供邮箱、密码、MFA/TOTP 输入框。</li>
+            <li>提供 Cisco SSO、Google、GitHub 登录入口。</li>
+            <li>本地登录提交到 <code>/api/auth/login</code>。</li>
+            <li>登录成功进入工作台，登录失败展示错误。</li>
+            <li>开发环境允许管理员 MFA 关闭，生产环境建议启用。</li>
+          </ul>
+
+          <h3>接线工作台 <code>/</code></h3>
+          <table>
+            <thead><tr><th>区域</th><th>元素</th><th>需求</th></tr></thead>
+            <tbody>
+              <tr><td>顶部栏</td><td>产品名、标题、搜索框、用户角色、刷新、退出</td><td>常用操作首屏可达，搜索实时过滤线缆。</td></tr>
+              <tr><td>左侧栏</td><td>机柜切换、线缆列表、多选框、状态点</td><td>支持按机柜查看和批量选择线缆。</td></tr>
+              <tr><td>中央区</td><td>机柜框、设备卡片、端口网格</td><td>端口根据线缆状态显示不同样式，点击端口展示详情。</td></tr>
+              <tr><td>右侧栏</td><td>新增线缆、导出、打印、详情、二维码、路径、照片、审计</td><td>根据权限启用/禁用操作，显示最近审计日志。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="features">
+          <h2>8. 功能需求</h2>
+          <h3>认证与会话</h3>
+          <table>
+            <thead><tr><th>编号</th><th>需求</th><th>优先级</th></tr></thead>
+            <tbody>
+              <tr><td>AUTH-01</td><td>支持本地邮箱密码登录。</td><td>P0</td></tr>
+              <tr><td>AUTH-02</td><td>支持可选 TOTP MFA。</td><td>P0</td></tr>
+              <tr><td>AUTH-03</td><td>支持 Cisco、Google、GitHub OAuth/OIDC。</td><td>P1</td></tr>
+              <tr><td>AUTH-04</td><td>未登录访问页面跳转登录页，访问 API 返回 401。</td><td>P0</td></tr>
+              <tr><td>AUTH-05</td><td>登录接口有基础限流，登录失败写审计。</td><td>P0</td></tr>
+            </tbody>
+          </table>
+
+          <h3>库存、端口与线缆</h3>
+          <table>
+            <thead><tr><th>编号</th><th>需求</th><th>优先级</th></tr></thead>
+            <tbody>
+              <tr><td>INV-01</td><td>聚合查询机柜、无机柜设备、线缆、打印机和最近审计日志。</td><td>P0</td></tr>
+              <tr><td>PORT-01</td><td>支持 Cisco Catalyst 风格端口名，例如 <code>Gi1/0/24</code>、<code>Te1/1/1</code>。</td><td>P0</td></tr>
+              <tr><td>PORT-02</td><td>配线架前后端口支持 <code>mappedPortId</code> 映射。</td><td>P0</td></tr>
+              <tr><td>CABLE-01</td><td>线缆编号唯一，必须绑定两个不同端口。</td><td>P0</td></tr>
+              <tr><td>CABLE-02</td><td>活动线缆不得重复占用端口，退役线缆不参与占用。</td><td>P0</td></tr>
+              <tr><td>CABLE-03</td><td>确认线缆仅限 <code>REVIEWER</code> 或 <code>ADMIN</code>。</td><td>P0</td></tr>
+              <tr><td>CABLE-04</td><td>删除线缆仅限 <code>ADMIN</code>。</td><td>P0</td></tr>
+            </tbody>
+          </table>
+
+          <h3>线缆状态</h3>
+          <table>
+            <thead><tr><th>状态</th><th>中文含义</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td><code>planned</code></td><td>规划</td><td>已设计但尚未实施。</td></tr>
+              <tr><td><code>draft</code></td><td>草稿</td><td>初始录入，尚未提交复核。</td></tr>
+              <tr><td><code>pending_verification</code></td><td>待复核</td><td>现场完成，等待复核确认。</td></tr>
+              <tr><td><code>confirmed</code></td><td>已确认</td><td>复核通过，可作为可信台账。</td></tr>
+              <tr><td><code>faulty</code></td><td>故障</td><td>线缆或链路存在问题。</td></tr>
+              <tr><td><code>retired</code></td><td>退役</td><td>不参与活动端口占用和路径追踪。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>照片、导出与打印</h3>
+          <table>
+            <thead><tr><th>编号</th><th>需求</th><th>优先级</th></tr></thead>
+            <tbody>
+              <tr><td>PHOTO-01</td><td>照片必须绑定线缆或端口，只允许图片类型，大小不超过 8 MB。</td><td>P0</td></tr>
+              <tr><td>PHOTO-02</td><td>照片存储在私有目录，只能通过鉴权 API 访问。</td><td>P0</td></tr>
+              <tr><td>EXPORT-01</td><td>支持 Excel、PDF、标签 PDF 导出，权限为 <code>REVIEWER+</code>。</td><td>P0</td></tr>
+              <tr><td>LABEL-01</td><td>每根线缆可生成二维码，URL 指向 <code>/?cable={id}</code>。</td><td>P0</td></tr>
+              <tr><td>PRINT-01</td><td>支持 HTTP_JSON、HTTP_ZPL、HTTP_TSPL 打印网关。</td><td>P0/P1</td></tr>
+              <tr><td>PRINT-02</td><td>打印任务记录 <code>queued</code>、<code>sent</code>、<code>failed</code>。</td><td>P0</td></tr>
+            </tbody>
+          </table>
+
+          <h3>审计日志</h3>
+          <p>系统必须记录登录、MFA 失败、OAuth 登录、新增线缆、更新线缆、删除线缆、上传照片、打印任务、打印机配置变更等关键动作。审计日志应包含操作人、动作、实体类型、实体 ID、旧值、新值、IP 和时间。</p>
+        </section>
+
+        <section id="apis">
+          <h2>9. API 需求</h2>
+          <p>所有业务 API 默认要求登录。带修改语义的请求必须校验 CSRF Token。</p>
+
+          <h3>认证 API</h3>
+          <table>
+            <thead><tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>公开</td><td>本地账号登录，支持 MFA。</td></tr>
+              <tr><td><code>POST</code></td><td><code>/api/auth/logout</code></td><td>登录用户</td><td>注销当前会话。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/auth/session</code></td><td>登录用户</td><td>获取当前用户和 CSRF Token。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/auth/oauth/{provider}</code></td><td>公开</td><td>发起 OAuth 登录。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/auth/oauth/{provider}/callback</code></td><td>公开</td><td>OAuth 回调并创建会话。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>业务 API</h3>
+          <table>
+            <thead><tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET</code></td><td><code>/api/inventory</code></td><td>登录用户</td><td>返回工作台库存快照。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/cables</code></td><td>登录用户</td><td>获取线缆列表。</td></tr>
+              <tr><td><code>POST</code></td><td><code>/api/cables</code></td><td><code>SURVEYOR+</code></td><td>新增线缆。</td></tr>
+              <tr><td><code>PATCH</code></td><td><code>/api/cables/{id}</code></td><td><code>SURVEYOR+</code></td><td>更新线缆状态或备注。</td></tr>
+              <tr><td><code>DELETE</code></td><td><code>/api/cables/{id}</code></td><td><code>ADMIN</code></td><td>删除线缆。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/cables/{id}/qr</code></td><td>登录用户</td><td>返回二维码 PNG。</td></tr>
+              <tr><td><code>POST</code></td><td><code>/api/photos</code></td><td><code>SURVEYOR+</code></td><td>上传照片。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/photos/{id}</code></td><td>登录用户</td><td>读取私有照片。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/exports/excel</code></td><td><code>REVIEWER+</code></td><td>导出 Excel 台账。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/exports/pdf</code></td><td><code>REVIEWER+</code></td><td>导出 PDF 台账。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/exports/labels</code></td><td><code>REVIEWER+</code></td><td>导出标签 PDF。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/printers</code></td><td>登录用户</td><td>查询打印机配置，不返回 API key。</td></tr>
+              <tr><td><code>POST</code></td><td><code>/api/printers</code></td><td><code>ADMIN</code></td><td>新增打印机。</td></tr>
+              <tr><td><code>PATCH</code></td><td><code>/api/printers/{id}</code></td><td><code>ADMIN</code></td><td>更新打印机。</td></tr>
+              <tr><td><code>DELETE</code></td><td><code>/api/printers/{id}</code></td><td><code>ADMIN</code></td><td>删除打印机。</td></tr>
+              <tr><td><code>GET</code></td><td><code>/api/printing/jobs</code></td><td><code>REVIEWER+</code></td><td>查询最近打印任务。</td></tr>
+              <tr><td><code>POST</code></td><td><code>/api/printing/jobs</code></td><td><code>REVIEWER+</code></td><td>提交打印任务。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>典型请求</h3>
+          <pre><code>{
+  "cableId": "CBL-MDF01-R01-GI1-0-1",
+  "label": "R01-U36 Gi1/0/1 -> PP01-F01",
+  "endpointAPortId": "port-a",
+  "endpointBPortId": "port-b",
+  "status": "draft",
+  "media": "COPPER",
+  "color": "blue",
+  "lengthM": 2
+}</code></pre>
+        </section>
+
+        <section id="data">
+          <h2>10. 数据模型</h2>
+          <p>数据库使用 PostgreSQL，ORM 使用 Prisma。核心模型包括用户、账号、会话、机柜、设备、端口、线缆、照片、打印机、打印任务和审计日志。</p>
+          <table>
+            <thead><tr><th>实体</th><th>关键字段</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>User</td><td><code>email</code>, <code>role</code>, <code>mfaEnabled</code></td><td>系统用户，本地和 OAuth 用户统一关联。</td></tr>
+              <tr><td>Account</td><td><code>provider</code>, <code>providerAccountId</code></td><td>登录身份来源，支持 LOCAL、GOOGLE、GITHUB、CISCO。</td></tr>
+              <tr><td>Session</td><td><code>tokenHash</code>, <code>csrfToken</code>, <code>expiresAt</code></td><td>服务端会话和 CSRF Token。</td></tr>
+              <tr><td>Rack</td><td><code>code</code>, <code>room</code>, <code>heightU</code></td><td>机柜。</td></tr>
+              <tr><td>Device</td><td><code>name</code>, <code>type</code>, <code>uPosition</code></td><td>交换机、配线架、墙口、服务器、AP 等。</td></tr>
+              <tr><td>Port</td><td><code>deviceId</code>, <code>name</code>, <code>mappedPortId</code></td><td>设备端口和配线架映射。</td></tr>
+              <tr><td>Cable</td><td><code>cableId</code>, <code>status</code>, <code>endpointAPortId</code>, <code>endpointBPortId</code></td><td>端口级线缆连接。</td></tr>
+              <tr><td>Photo</td><td><code>filename</code>, <code>sha256</code>, <code>uploadedById</code></td><td>私有照片元数据。</td></tr>
+              <tr><td>LabelPrinter</td><td><code>protocol</code>, <code>endpoint</code>, <code>enabled</code></td><td>标签打印机网关配置。</td></tr>
+              <tr><td>PrintJob</td><td><code>printerId</code>, <code>status</code>, <code>payload</code></td><td>打印任务。</td></tr>
+              <tr><td>AuditLog</td><td><code>actorId</code>, <code>action</code>, <code>entityType</code>, <code>oldValue</code>, <code>newValue</code></td><td>审计追踪。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>关系说明</h3>
+          <ul>
+            <li>一个机柜包含多个设备。</li>
+            <li>一个设备拥有多个端口。</li>
+            <li>一根线缆连接两个端口。</li>
+            <li>配线架前后端口通过 <code>mappedPortId</code> 表示逻辑映射。</li>
+            <li>照片可绑定线缆或端口。</li>
+            <li>打印任务包含多个打印明细，每个明细关联一根线缆。</li>
+            <li>审计日志可关联操作用户。</li>
+          </ul>
+        </section>
+
+        <section id="architecture">
+          <h2>11. 技术架构</h2>
+          <h3>技术栈</h3>
+          <table>
+            <thead><tr><th>层级</th><th>技术</th><th>版本/说明</th></tr></thead>
+            <tbody>
+              <tr><td>应用框架</td><td>Next.js</td><td>16.2.9，App Router，Turbopack 开发模式。</td></tr>
+              <tr><td>UI</td><td>React</td><td>19.2.7。</td></tr>
+              <tr><td>语言</td><td>TypeScript</td><td>5.9.3。</td></tr>
+              <tr><td>ORM</td><td>Prisma</td><td>6.19.3。</td></tr>
+              <tr><td>数据库</td><td>PostgreSQL</td><td>Compose 默认 17，本地可用 16+。</td></tr>
+              <tr><td>校验</td><td>Zod</td><td>请求输入校验。</td></tr>
+              <tr><td>认证</td><td>bcryptjs / otplib</td><td>密码哈希和 TOTP MFA。</td></tr>
+              <tr><td>文件生成</td><td>qrcode / pdfkit</td><td>二维码、PDF 台账、标签。</td></tr>
+              <tr><td>测试</td><td>Vitest</td><td>单元测试。</td></tr>
+              <tr><td>部署</td><td>Docker Compose / Caddy</td><td>App、DB、迁移、HTTPS 反向代理。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>模块职责</h3>
+          <table>
+            <thead><tr><th>路径</th><th>职责</th></tr></thead>
+            <tbody>
+              <tr><td><code>prisma/schema.prisma</code></td><td>数据库模型与枚举。</td></tr>
+              <tr><td><code>prisma/seed.ts</code></td><td>初始化管理员、机柜、端口、线缆、打印机示例。</td></tr>
+              <tr><td><code>src/app/DashboardClient.tsx</code></td><td>工作台客户端交互。</td></tr>
+              <tr><td><code>src/app/api</code></td><td>认证、库存、线缆、照片、导出、打印 API。</td></tr>
+              <tr><td><code>src/server/auth.ts</code></td><td>会话、密码、MFA、请求认证。</td></tr>
+              <tr><td><code>src/server/oauth.ts</code></td><td>OAuth/OIDC 登录。</td></tr>
+              <tr><td><code>src/server/network-model.ts</code></td><td>Cisco 端口校验、路径追踪。</td></tr>
+              <tr><td><code>src/server/exports.ts</code></td><td>Excel/PDF/标签导出。</td></tr>
+              <tr><td><code>src/server/printing.ts</code></td><td>打印任务与协议渲染。</td></tr>
+              <tr><td><code>scripts/backup.sh</code></td><td>加密备份脚本。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="security">
+          <h2>12. 安全与非功能需求</h2>
+          <h3>安全需求</h3>
+          <table>
+            <thead><tr><th>编号</th><th>需求</th><th>优先级</th></tr></thead>
+            <tbody>
+              <tr><td>SEC-01</td><td>公网部署不得提供匿名资产访问。</td><td>P0</td></tr>
+              <tr><td>SEC-02</td><td>照片不得通过静态目录公开。</td><td>P0</td></tr>
+              <tr><td>SEC-03</td><td>修改类 API 必须校验 CSRF Token。</td><td>P0</td></tr>
+              <tr><td>SEC-04</td><td>会话 Cookie 必须 HTTP-only，生产环境必须 Secure。</td><td>P0</td></tr>
+              <tr><td>SEC-05</td><td>密码必须哈希存储，生产管理员必须启用 MFA。</td><td>P0</td></tr>
+              <tr><td>SEC-06</td><td>OAuth 自动创建用户默认角色为 <code>VIEWER</code>。</td><td>P0</td></tr>
+              <tr><td>SEC-07</td><td>数据库不得直接暴露到公网。</td><td>P0</td></tr>
+              <tr><td>SEC-08</td><td>备份文件必须加密保存。</td><td>P0</td></tr>
+            </tbody>
+          </table>
+
+          <h3>非功能要求</h3>
+          <table>
+            <thead><tr><th>类别</th><th>要求</th></tr></thead>
+            <tbody>
+              <tr><td>性能</td><td>常规办公网络下首屏 3 秒内完成；5000 条线缆以内库存查询 2 秒内返回。</td></tr>
+              <tr><td>可用性</td><td>支持桌面和手机浏览器；关键操作按权限禁用；失败操作给出可读反馈。</td></tr>
+              <tr><td>可靠性</td><td>打印网关失败不丢任务；数据库错误可追踪；备份可定期执行。</td></tr>
+              <tr><td>可维护性</td><td>输入集中校验；权限集中维护；数据模型通过 Prisma 管理；核心逻辑有单元测试。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="deployment">
+          <h2>13. 部署运维</h2>
+          <h3>本地开发</h3>
+          <pre><code>npm install
+Copy-Item .env.example .env
+npm run db:push
+npm run db:seed
+npm run dev</code></pre>
+
+          <p>本地没有 PostgreSQL 时可启动容器：</p>
+          <pre><code>docker run --name patchplan-postgres `
+  -e POSTGRES_DB=patchplan `
+  -e POSTGRES_USER=patchplan `
+  -e POSTGRES_PASSWORD=patchplan `
+  -p 5432:5432 `
+  -d postgres:16</code></pre>
+
+          <h3>生产部署</h3>
+          <table>
+            <thead><tr><th>服务</th><th>职责</th></tr></thead>
+            <tbody>
+              <tr><td><code>db</code></td><td>PostgreSQL 数据库。</td></tr>
+              <tr><td><code>migrate</code></td><td>执行 Prisma schema push 和 seed。</td></tr>
+              <tr><td><code>app</code></td><td>Next.js 应用。</td></tr>
+              <tr><td><code>caddy</code></td><td>HTTPS 反向代理，自动证书和安全响应头。</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout warning">
+            <strong>公网部署要求：</strong>
+            <ul>
+              <li>只向公网开放 80 和 443。</li>
+              <li>SSH 使用密钥登录，并限制管理员来源 IP。</li>
+              <li>PostgreSQL 不暴露公网端口。</li>
+              <li>生产环境必须替换默认密码、TOTP secret、数据库密码和 <code>SESSION_SECRET</code>。</li>
+            </ul>
+          </div>
+
+          <h3>备份</h3>
+          <p><code>scripts/backup.sh</code> 负责创建加密 PostgreSQL dump、加密照片 volume 备份，并自动删除 30 天以前的备份。建议每日执行，每月至少做一次恢复演练，并同步到独立存储。</p>
+        </section>
+
+        <section id="testing">
+          <h2>14. 测试验收</h2>
+          <h3>验证命令</h3>
+          <pre><code>npm audit --audit-level=moderate
+npm run typecheck
+npm run test
+npm run build</code></pre>
+
+          <h3>功能验收清单</h3>
+          <table>
+            <thead><tr><th>场景</th><th>验收标准</th></tr></thead>
+            <tbody>
+              <tr><td>未登录访问首页</td><td>自动跳转登录页。</td></tr>
+              <tr><td>未登录访问 API</td><td>返回 401。</td></tr>
+              <tr><td>管理员登录</td><td>邮箱密码正确时进入工作台。</td></tr>
+              <tr><td>MFA 登录</td><td>MFA 开启时必须输入正确 TOTP。</td></tr>
+              <tr><td>查看库存</td><td>机柜、设备、端口、线缆正常展示。</td></tr>
+              <tr><td>搜索线缆</td><td>输入线缆号或端点后列表过滤正确。</td></tr>
+              <tr><td>新增线缆</td><td>合法请求创建成功并写审计。</td></tr>
+              <tr><td>重复占用端口</td><td>返回 409。</td></tr>
+              <tr><td>确认线缆</td><td><code>REVIEWER+</code> 成功，低权限失败。</td></tr>
+              <tr><td>上传照片</td><td>图片上传成功，非图片和超 8 MB 失败。</td></tr>
+              <tr><td>导出与打印</td><td><code>REVIEWER+</code> 可导出和提交打印任务。</td></tr>
+              <tr><td>审计日志</td><td>登录、改线、上传、打印、打印机配置均有记录。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>权限验收矩阵</h3>
+          <table>
+            <thead><tr><th>功能</th><th>VIEWER</th><th>SURVEYOR</th><th>REVIEWER</th><th>ADMIN</th></tr></thead>
+            <tbody>
+              <tr><td>查看工作台</td><td>是</td><td>是</td><td>是</td><td>是</td></tr>
+              <tr><td>新增线缆</td><td>否</td><td>是</td><td>是</td><td>是</td></tr>
+              <tr><td>上传照片</td><td>否</td><td>是</td><td>是</td><td>是</td></tr>
+              <tr><td>确认线缆</td><td>否</td><td>否</td><td>是</td><td>是</td></tr>
+              <tr><td>导出 Excel/PDF</td><td>否</td><td>否</td><td>是</td><td>是</td></tr>
+              <tr><td>批量打印</td><td>否</td><td>否</td><td>是</td><td>是</td></tr>
+              <tr><td>配置打印机</td><td>否</td><td>否</td><td>否</td><td>是</td></tr>
+              <tr><td>删除线缆</td><td>否</td><td>否</td><td>否</td><td>是</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="roadmap">
+          <h2>15. 里程碑与路线图</h2>
+          <h3>里程碑</h3>
+          <table>
+            <thead><tr><th>阶段</th><th>目标</th><th>验收</th></tr></thead>
+            <tbody>
+              <tr><td>M1 本地可用</td><td>数据库初始化、管理员登录、种子数据展示、基础查线。</td><td>类型检查和测试通过，管理员可登录。</td></tr>
+              <tr><td>M2 现场试用</td><td>录入真实机柜、照片上传、标签导出、手机浏览器验证。</td><td>真实线缆可扫码定位，待复核流程跑通。</td></tr>
+              <tr><td>M3 公网部署</td><td>Docker Compose、Caddy HTTPS、生产 MFA、备份恢复。</td><td>业务 API 未登录均拒绝，数据库不暴露公网。</td></tr>
+              <tr><td>M4 运维增强</td><td>用户管理、资产导入、打印机管理页、审计检索。</td><td>管理员可在 UI 内完成日常配置。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>后续路线图</h3>
+          <table>
+            <thead><tr><th>版本</th><th>能力</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>V1.1</td><td>资产批量导入</td><td>从 CSV/Excel 导入机柜、设备、端口和线缆。</td></tr>
+              <tr><td>V1.2</td><td>用户管理</td><td>管理员创建用户、分配角色、重置 MFA。</td></tr>
+              <tr><td>V1.3</td><td>变更审批</td><td>新接线、改线、退役进入审批流。</td></tr>
+              <tr><td>V1.4</td><td>自动发现</td><td>接入 LLDP/CDP/SNMP，生成待确认发现结果。</td></tr>
+              <tr><td>V1.5</td><td>拓扑视图</td><td>在机柜视图之外提供链路拓扑图。</td></tr>
+              <tr><td>V1.6</td><td>告警关联</td><td>与监控系统联动，故障端口映射物理路径。</td></tr>
+              <tr><td>V1.7</td><td>多站点</td><td>支持多个机房、园区、区域的隔离管理。</td></tr>
+            </tbody>
+          </table>
+
+          <h3>待确认问题</h3>
+          <ul>
+            <li>是否需要在 UI 中提供用户管理、角色变更、禁用账号能力？</li>
+            <li>是否需要支持多个机房/站点的权限隔离？</li>
+            <li>线缆编号规则是否需要强制格式？</li>
+            <li>标签尺寸是否固定，还是需要按打印机模板配置？</li>
+            <li>照片是否需要压缩、缩略图和 EXIF 清理？</li>
+            <li>是否需要从交换机配置或 LLDP/CDP 自动生成待确认线缆？</li>
+            <li>是否需要和现有 CMDB、工单系统或资产系统同步？</li>
+          </ul>
+        </section>
+
+        <footer class="footer">
+          <strong>开发阶段默认账号：</strong>
+          <code>admin@example.com</code> / <code>ChangeMe123!</code>，MFA 默认关闭。生产环境必须替换默认密码、启用 MFA、设置强 <code>SESSION_SECRET</code>，并固定 <code>APP_URL</code> 与 <code>NEXT_PUBLIC_APP_URL</code>。
+        </footer>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
