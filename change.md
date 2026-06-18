@@ -4,6 +4,43 @@ This file records product, UI, data-model, deployment, and documentation changes
 
 ## 2026-06-17
 
+### Rackula Device Type Library
+
+- Imported Rackula's current Generic starter device type library into `src/shared/rackula-device-catalog.ts`.
+- Added 64 Rackula-style generic templates covering servers, firewalls, network switches, storage, power, patch panels, KVM, AV/media, cooling, shelves, chassis, blanks, and cable management.
+- Preserved Rackula metadata including slug, category, U height, depth, half-width status, parent/child role, and container slots.
+- Added a searchable Rackula Device Types section in the left sidebar.
+- Added selected-template details in the inspector so Rackula templates can be reviewed separately from real rack-mounted devices.
+- Added Vitest coverage for the imported catalog count and container slot metadata.
+
+### Compact Office Rack Overview
+
+- Reduced the front rack overview scale so a 42U rack no longer dominates the site workspace.
+- Changed the site rack view to show up to three racks from the selected office/site side by side, while still highlighting the active rack.
+- Kept front-only rack rendering and preserved real U-position placement for devices and ports.
+- Updated `DESIGN.md` with the compact office/small MDF rack overview rule.
+
+### Device Removal Actions
+
+- Added an Admin-only device action in the details inspector for deleting mounted devices.
+- Added `/api/devices/[id]` DELETE support with CSRF and Admin role checks.
+- Blocked device deletion while any of the device ports still have connected cables, preserving cable records until they are removed or retired intentionally.
+- Added English and Chinese device deletion copy and API error messages.
+
+### Single Front Rack View
+
+- Changed the main rack overview from side-by-side front and rear rack faces to one front-facing rack view.
+- Updated rack overview copy in English and Chinese so it no longer describes a front/rear split.
+- Updated README preview text to describe the center pane as a front rack view.
+- Documented the single front-facing rack overview rule in `DESIGN.md`.
+
+### Rack Hardware Identity Display
+
+- Removed visible hostname/model/vendor text from in-rack device faceplates so the rack view reads like installed hardware instead of inventory cards.
+- Kept port buttons, switch banks, LEDs, and module/slot shapes inside the real U positions for hardware-level interaction.
+- Expanded the selected-device details summary with Hostname, Model, Vendor, Type, Rack position, and Management IP fields.
+- Updated `DESIGN.md` to keep rack-mounted faces focused on physical appearance and move inventory identity to the inspector.
+
 ### Product Naming
 
 - Finalized the Chinese product name as `接线镜`.
@@ -118,6 +155,24 @@ This file records product, UI, data-model, deployment, and documentation changes
 - Adjusted layout so side panes do not permanently cover the rack canvas.
 - Improved central rack canvas spacing for large hardware panels.
 - Added independent scrolling/panning behavior for the center canvas.
+
+### In-Rack Cisco Faceplate Operations
+
+- Moved Cisco switch port operation into the rack itself by rendering the C9300-style faceplate directly at the device's U position.
+- Kept each visible in-rack Cisco port as a real clickable port button, preserving canonical port names in the interaction target.
+- Removed the duplicate selected-device front panel from below the rack so the center canvas no longer repeats the same hardware view.
+- Replaced the right-side duplicate device front panel with a compact device summary and local connection list.
+- Updated the design rules so rack/canvas remains the single primary hardware surface and the inspector stays focused on details, connections, photos, and actions.
+
+### Global Map Home Mode
+
+- Split the center workspace into a global map overview mode and a site-focused mode.
+- The WAN world map now appears on the overview/home view only.
+- Selecting a site from the map or left navigator enters the site workspace and hides the world map.
+- Added a top-left brand/home control to return from a site workspace to the global WAN map.
+- Kept the global map home neutral, with global summary copy instead of carrying an active site selection into the overview.
+- Kept the left navigator in topology order on the global home and changed the cable empty state to prompt site selection.
+- Site pages with no imported rack now show only the empty-site state instead of repeating the global map.
 
 ### Pan, Wheel, And Selection Modes
 
@@ -314,6 +369,117 @@ This file records product, UI, data-model, deployment, and documentation changes
 - Added a public workbench screenshot to `docs/assets/traceeverylink-workbench.png`.
 - Added the screenshot to `README.md` so GitHub visitors can immediately see the TraceEveryLink interface.
 - Added a basic usage tutorial covering local startup, admin login, rack selection, search, port selection, patchline creation, and export actions.
+
+### Carbon-Inspired Workbench Redesign
+
+- Rewrote `DESIGN.md` as the active TraceEveryLink design source of truth.
+- Selected an IBM/Carbon-inspired enterprise operations direction from the awesome-design-md style set because it best fits network infrastructure workflows.
+- Reworked the application shell toward light neutral surfaces, 1px hairlines, square controls, scarce blue emphasis, and semantic status colors.
+- Fixed desktop scrolling so the body stays locked to one viewport while the sidebar, rack canvas, and details inspector scroll independently.
+- Reduced the default details inspector from 600px to 360px and narrowed its resize range so it no longer hides the rack canvas.
+- Updated responsive rules so mobile layouts stack sidebar, rack, and details areas without collapsing the rack canvas to a narrow column.
+- Renamed the English dashboard title from `Patchline Workbench` to `Trace Workbench`.
+- Replaced the README workbench screenshot with the redesigned Carbon-style UI.
+
+### APAC WAN Map
+
+- Reworked the main site topology card into a SolarWinds-like APAC WAN map while keeping the Carbon-inspired operations styling from `DESIGN.md`.
+- Separated the default sites as Tokyo, Singapore, Shanghai, Seoul, Sydney, and Bangkok on a dotted world-map background.
+- Added fixed WAN link paths with utilization color bands, an Unknown state, and a dashed Down status legend.
+- Added `Soul` and `Bankok` as tolerant aliases while keeping the visible site names as `Seoul` and `Bangkok`.
+
+### Apple-Inspired Softening
+
+- Updated `DESIGN.md` from strict square Carbon-style controls to an Apple-inspired soft operations direction.
+- Added controlled 8-12px roundness, Apple-like system typography, softer gray app chrome, subtle shadows, and calmer system-blue emphasis.
+- Rounded the topbar controls, side navigation rows, cable rows, workbench cards, WAN map nodes, legends, details panels, and action toolbar while preserving dense engineering layout and clickable port behavior.
+- Kept the physical rack and hardware panels visually technical, but softened their outer containers so the page feels less sharp.
+
+### Dedicated-Line Topology Update
+
+- Updated the WAN map to model the requested dedicated-line topology:
+  - Tokyo, Singapore, Seoul, Sydney, and Bangkok each connect back to Shanghai.
+  - Shanghai connects to Yanzhou with two dedicated lines.
+  - Yanzhou connects to Shenzhou and Jiaozuo with two dedicated lines each.
+  - Shanghai/China connects to Milan with one dedicated line.
+  - Shanghai connects to Indonesia Subang Factory, and Jakarta connects to Subang.
+- Added Yanzhou, Shenzhou, Jiaozuo, Milan, Jakarta, and Subang Factory as default map sites with bilingual labels.
+- Enlarged the WAN map canvas and made the dotted world map denser and clearer.
+- Made dual dedicated lines render as parallel circuits with `2x` labels.
+- Compactized the left rack selector so `R01 / 42U` no longer dominates the site card.
+- Removed the default audit log list from the right details panel.
+
+### Real World Map Basemap
+
+- Replaced the fake dotted WAN map background with a generated real-world basemap in `src/shared/world-map.ts`.
+- Generated the basemap from Natural Earth 50m Admin 0 Countries data and projected sites with longitude/latitude anchors.
+- Kept site labels as offset callouts so dense East Asia locations remain readable while lines still connect to the real geographic anchors.
+- Shifted the basemap colors toward a soft blue-gray Apple-inspired treatment instead of the older SolarWinds-like tan map.
+- Separated the three China dual-circuit `2x` labels so the Shanghai/Yanzhou/Shenzhou/Jiaozuo area is easier to read.
+- Updated the README workbench screenshot to show the real basemap and dedicated-line topology.
+
+### Enhanced Real Map Detail
+
+- Upgraded the generated basemap from the earlier simplified 202-path map to an 811-path Natural Earth 50m map.
+- Added a dedicated ocean layer, clearer land/country-border strokes, and subtle geography labels for Europe, Russia, Kazakhstan, India, China, Australia, Indonesia, Indian Ocean, South China Sea, and Pacific Ocean.
+- Added bilingual i18n entries for the basemap labels.
+- Tuned light and dark mode map colors so the basemap feels more realistic while remaining behind the WAN topology.
+- Updated the README workbench screenshot again with the enhanced real-map treatment.
+
+### WAN City Position Correction
+
+- Fixed the WAN link/pin SVG layer to use the same full-card aspect behavior as the Natural Earth basemap, so city markers align with their true longitude/latitude positions.
+- Tightened city callout offsets around Shanghai, Yanzhou, Shenzhou, Jiaozuo, Seoul, Tokyo, Singapore, Jakarta, and Subang while keeping leader lines connected to the true geographic pins.
+- Added a compact `geo-callout` treatment for WAN map city labels so dense East Asia and Indonesia locations no longer need exaggerated offsets.
+- Added short map-node i18n labels such as `1R/12D/15L` to avoid text clipping inside compact imported-site callouts.
+- Verified the WAN map in light and dark mode with no city-label overlaps or text overflow, then updated the README workbench screenshot.
+
+### Full World WAN Map And Site Pins
+
+- Regenerated `src/shared/world-map.ts` as a full-world Natural Earth 50m basemap instead of the earlier Europe-to-Pacific cropped viewport.
+- Expanded the WAN map canvas height and removed the previous max-width cap so the world map uses more of the center workspace.
+- Split city markers from callout labels: colored site pins now render above labels, while callouts only show country, city, and imported-site stats.
+- Removed visible `Pending` text from WAN map callouts and the map status legend to reduce visual noise.
+- Added site-specific accent colors for Shanghai, China domestic sites, Singapore, Seoul, Tokyo, Bangkok, Milan, Jakarta, Subang, and Sydney.
+- Added a tiny visual separation for the close Jakarta/Subang pin pair while keeping cable links anchored to the real geographic points.
+- Added North America, South America, and Atlantic Ocean geography labels for the full-world map.
+- Verified in browser that the WAN map has 1620 world paths, 12 visible pins, no visible `Pending` map text, no callout overlaps, and no covered pin centers.
+- Updated the README workbench screenshot with the full-world colored-pin map.
+
+### Submarine Cable Route Styling
+
+- Replaced the previous high-lift WAN curves with low-curvature cable traces built from route waypoints.
+- Routed Shanghai-to-Milan through sea-cable corridors via the South China Sea, Malacca Strait, Indian Ocean, Red Sea, and Mediterranean instead of a high overland arc.
+- Added waypoint-based routes for Shanghai links to Tokyo, Seoul, Singapore, Sydney, Bangkok, Subang, and Jakarta/Subang so the lines sit on the map surface like cable paths.
+- Kept China domestic dual circuits as compact parallel terrestrial traces while preserving the `2x` labels.
+- Updated the README workbench screenshot with the submarine-style route treatment.
+
+### Light And Dark Theme Support
+
+- Added persistent light/dark mode support with `traceeverylink-theme` local storage.
+- Added a root theme initialization script so saved dark mode applies before the app hydrates.
+- Added icon-based light/dark theme toggles to both the login page and the main workbench topbar.
+- Added bilingual i18n labels for theme controls.
+- Added dark theme styling for the app shell, login screen, side panes, details inspector, WAN map, real basemap, site callouts, tabs, buttons, forms, status badges, and port states.
+- Kept light mode as the default theme.
+
+### Sidebar Site/Rack Hierarchy Polish
+
+- Changed the left sidebar site card hierarchy so the site remains the primary information and racks render as compact child rows.
+- Combined site metadata into natural text such as `Default · 1 rack · 15 cables`.
+- Added plural-aware rack/cable count strings for English.
+- Changed the active rack style from a large filled blue button to a light selected chip with a blue dot.
+- Changed rack child labels to include context as `MDF-01 / R01` with `42U` as supporting metadata.
+- Separated rack selection styling from the generic `.active` state by using a dedicated `rack-selected` class.
+
+### Cable Sidebar List Polish
+
+- Reworked the left sidebar cable rows from large text-heavy cards into compact scan rows.
+- Separated the batch-selection checkbox from the row open action instead of nesting a checkbox inside a button.
+- Added a one-line cable identifier, short A-to-B endpoint preview, and small status dot so dense cable lists are easier to scan.
+- Added a shorter cable-list endpoint formatter while keeping full cable labels in tooltips and the details inspector.
+- Added an accessible i18n label for selecting cables in the batch list.
+- Verified the compact cable list in light and dark mode and updated the README workbench screenshot.
 
 ### Backup And Existing Operations Scripts
 

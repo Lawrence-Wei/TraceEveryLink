@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent, type WheelEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type WheelEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Cable,
@@ -8,9 +8,11 @@ import {
   Download,
   FileText,
   Hand,
+  Home,
   LogOut,
   Maximize2,
   Minimize2,
+  Moon,
   MousePointer2,
   Plus,
   Printer,
@@ -18,6 +20,7 @@ import {
   RefreshCw,
   RotateCcw,
   Search,
+  Sun,
   Trash2,
   Upload,
   X
@@ -32,6 +35,15 @@ import {
   sortCiscoPortsLeftToRight,
 } from "@/shared/cisco-catalog";
 import { languageOptions, translateApiError, type Translate, type TranslationKey, useI18n } from "@/shared/i18n";
+import {
+  rackulaDeviceCategoryOrder,
+  rackulaGenericDeviceTypes,
+  rackulaCategoryToTraceDeviceType,
+  type RackulaDeviceCategory,
+  type RackulaDeviceTemplate
+} from "@/shared/rackula-device-catalog";
+import { themeOptions, useTheme } from "@/shared/theme";
+import { worldMapPaths, worldMapViewport } from "@/shared/world-map";
 
 type Role = "VIEWER" | "SURVEYOR" | "REVIEWER" | "ADMIN";
 type CableStatus = "planned" | "draft" | "pending_verification" | "confirmed" | "faulty" | "retired";
@@ -150,6 +162,10 @@ type SitePoint = {
   aliases: string[];
   x: number;
   y: number;
+  geoX?: number;
+  geoY?: number;
+  lat?: number;
+  lon?: number;
   custom?: boolean;
 };
 
@@ -174,15 +190,88 @@ type NewSiteFormState = {
 
 const cableStatuses: CableStatus[] = ["planned", "draft", "pending_verification", "confirmed", "faulty", "retired"];
 
+const officeRackOverviewLimit = 3;
+
 const customSitesStorageKey = "patchplan-custom-sites";
 
+function createGeoSite(site: Omit<SitePoint, "x" | "y" | "geoX" | "geoY"> & { lon: number; lat: number; labelDx?: number; labelDy?: number }): SitePoint {
+  const projected = projectMapPoint(site.lon, site.lat);
+  return {
+    ...site,
+    x: clamp(projected.x + (site.labelDx || 0), 4, 96),
+    y: clamp(projected.y + (site.labelDy || 0), 4, 96),
+    geoX: projected.x,
+    geoY: projected.y
+  };
+}
+
+function projectMapPoint(lon: number, lat: number) {
+  const mercator = (value: number) => Math.log(Math.tan(Math.PI / 4 + value * Math.PI / 360));
+  const maxY = mercator(worldMapViewport.maxLat);
+  const minY = mercator(worldMapViewport.minLat);
+  const boundedLat = clamp(lat, worldMapViewport.minLat, worldMapViewport.maxLat);
+  return {
+    x: ((lon - worldMapViewport.minLon) / (worldMapViewport.maxLon - worldMapViewport.minLon)) * 100,
+    y: ((maxY - mercator(boundedLat)) / (maxY - minY)) * 100
+  };
+}
+
 const defaultSitePoints: SitePoint[] = [
-  { id: "shanghai", label: "Shanghai", country: "China", city: "Shanghai", aliases: ["MDF-01", "Shanghai", "上海"], x: 58, y: 44 },
-  { id: "singapore", label: "Singapore", country: "Singapore", city: "Singapore", aliases: ["MDF-02", "Singapore", "新加坡"], x: 48, y: 76 },
-  { id: "sydney", label: "Sydney", country: "Australia", city: "Sydney", aliases: ["Australia", "Sydney", "澳大利亚", "悉尼"], x: 78, y: 84 },
-  { id: "seoul", label: "Seoul", country: "Korea", city: "Seoul", aliases: ["Korea", "Seoul", "韩国", "首尔"], x: 70, y: 27 },
-  { id: "tokyo", label: "Tokyo", country: "Japan", city: "Tokyo", aliases: ["Japan", "Tokyo", "日本", "东京"], x: 88, y: 35 },
-  { id: "bangkok", label: "Bangkok", country: "Thailand", city: "Bangkok", aliases: ["Thailand", "Bangkok", "泰国", "曼谷"], x: 42, y: 63 }
+  createGeoSite({ id: "shanghai", label: "Shanghai", country: "China", city: "Shanghai", aliases: ["MDF-01", "Shanghai", "上海"], lon: 121.47, lat: 31.23, labelDx: 1.8, labelDy: 2.4 }),
+  createGeoSite({ id: "yanzhou", label: "Yanzhou", country: "China", city: "Yanzhou", aliases: ["Yanzhou", "兖州"], lon: 116.83, lat: 35.55, labelDx: -0.8, labelDy: -5.9 }),
+  createGeoSite({ id: "shenzhou", label: "Shenzhou", country: "China", city: "Shenzhou", aliases: ["Shenzhou", "深州"], lon: 115.56, lat: 38, labelDx: -7.4, labelDy: -5.5 }),
+  createGeoSite({ id: "jiaozuo", label: "Jiaozuo", country: "China", city: "Jiaozuo", aliases: ["Jiaozuo", "焦作"], lon: 113.24, lat: 35.24, labelDx: -5.6, labelDy: 3.6 }),
+  createGeoSite({ id: "singapore", label: "Singapore", country: "Singapore", city: "Singapore", aliases: ["MDF-02", "Singapore", "新加坡"], lon: 103.82, lat: 1.35, labelDx: 3.4, labelDy: -0.5 }),
+  createGeoSite({ id: "sydney", label: "Sydney", country: "Australia", city: "Sydney", aliases: ["Australia", "Sydney", "澳大利亚", "悉尼"], lon: 151.21, lat: -33.87, labelDx: -3.5, labelDy: -3.2 }),
+  createGeoSite({ id: "seoul", label: "Seoul", country: "Korea", city: "Seoul", aliases: ["Korea", "Seoul", "Soul", "韩国", "首尔"], lon: 126.98, lat: 37.57, labelDx: 5.8, labelDy: -4.7 }),
+  createGeoSite({ id: "tokyo", label: "Tokyo", country: "Japan", city: "Tokyo", aliases: ["Japan", "Tokyo", "日本", "东京"], lon: 139.69, lat: 35.68, labelDx: 4.4, labelDy: 3.2 }),
+  createGeoSite({ id: "bangkok", label: "Bangkok", country: "Thailand", city: "Bangkok", aliases: ["Thailand", "Bangkok", "Bankok", "泰国", "曼谷"], lon: 100.5, lat: 13.76, labelDx: -3.6, labelDy: -1.5 }),
+  createGeoSite({ id: "milan", label: "Milan", country: "Italy", city: "Milan", aliases: ["Milan", "Milano", "米兰"], lon: 9.19, lat: 45.46, labelDx: 1.6, labelDy: 1.2 }),
+  createGeoSite({ id: "jakarta", label: "Jakarta", country: "Indonesia", city: "Jakarta", aliases: ["Jakarta", "雅加达"], lon: 106.85, lat: -6.21, labelDx: -7.2, labelDy: 5.8 }),
+  createGeoSite({ id: "subang", label: "Subang Factory", country: "Indonesia", city: "Subang", aliases: ["Subang", "Subang Factory", "苏帮", "苏帮工厂"], lon: 107.76, lat: -6.57, labelDx: 5.3, labelDy: 5.2 })
+];
+
+const defaultSiteOrder = new Map(defaultSitePoints.map((site, index) => [site.id, index]));
+const defaultCountryOrder = new Map(
+  Array.from(new Set(defaultSitePoints.map((site) => site.country))).map((country, index) => [country, index])
+);
+
+type WanUtilizationBand = "u0" | "u10" | "u25" | "u40" | "u55" | "u70" | "u85" | "u100" | "unknown" | "down";
+
+type SiteWanLink = {
+  from: string;
+  to: string;
+  utilization: WanUtilizationBand;
+  circuits?: number;
+  route?: Array<{ lon: number; lat: number }>;
+  labelDx?: number;
+  labelDy?: number;
+};
+
+const siteWanLinks: SiteWanLink[] = [
+  { from: "tokyo", to: "shanghai", utilization: "u25", route: [{ lon: 129.8, lat: 31.2 }] },
+  { from: "singapore", to: "shanghai", utilization: "u40", route: [{ lon: 110.5, lat: 8.8 }, { lon: 116.2, lat: 20.4 }] },
+  { from: "seoul", to: "shanghai", utilization: "u10", route: [{ lon: 124.1, lat: 34.6 }] },
+  { from: "sydney", to: "shanghai", utilization: "u55", route: [{ lon: 147.5, lat: -18.5 }, { lon: 134.8, lat: -2.2 }, { lon: 124.4, lat: 18.8 }] },
+  { from: "bangkok", to: "shanghai", utilization: "u25", route: [{ lon: 103.6, lat: 15.4 }, { lon: 109.8, lat: 20.2 }, { lon: 117.2, lat: 26.6 }] },
+  { from: "shanghai", to: "yanzhou", utilization: "u40", circuits: 2, labelDx: 3.8, labelDy: -5.8 },
+  { from: "yanzhou", to: "shenzhou", utilization: "u10", circuits: 2, labelDx: -4.2, labelDy: -6.8 },
+  { from: "yanzhou", to: "jiaozuo", utilization: "u25", circuits: 2, labelDx: -5.2, labelDy: 5.8 },
+  { from: "shanghai", to: "milan", utilization: "u70", route: [{ lon: 118.5, lat: 22.2 }, { lon: 103.7, lat: 1.5 }, { lon: 80, lat: 7.2 }, { lon: 59, lat: 12.5 }, { lon: 43, lat: 12.8 }, { lon: 33, lat: 31.5 }, { lon: 18, lat: 39.2 }] },
+  { from: "shanghai", to: "subang", utilization: "u55", route: [{ lon: 116.4, lat: 20.2 }, { lon: 110.5, lat: 7.8 }, { lon: 107.8, lat: -1.5 }] },
+  { from: "jakarta", to: "subang", utilization: "u10", route: [{ lon: 107.2, lat: -6.35 }] }
+];
+
+const linkUtilizationLegend: Array<{ utilization: WanUtilizationBand; label?: string; labelKey?: TranslationKey }> = [
+  { utilization: "u0", label: "0 - 10%" },
+  { utilization: "u10", label: "10 - 25%" },
+  { utilization: "u25", label: "25 - 40%" },
+  { utilization: "u40", label: "40 - 55%" },
+  { utilization: "u55", label: "55 - 70%" },
+  { utilization: "u70", label: "70 - 85%" },
+  { utilization: "u85", label: "85 - 100%" },
+  { utilization: "unknown", labelKey: "siteMap.unknown" },
+  { utilization: "down", labelKey: "siteMap.downStatus" }
 ];
 
 export default function DashboardClient({
@@ -197,6 +286,7 @@ export default function DashboardClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { language, setLanguage, t } = useI18n();
+  const { theme, setTheme } = useTheme();
   const [data, setData] = useState(initialData);
   const [activeRackId, setActiveRackId] = useState(initialData.racks[0]?.id || "");
   const [selectedCableIds, setSelectedCableIds] = useState<string[]>([]);
@@ -209,11 +299,13 @@ export default function DashboardClient({
   const [dragPortId, setDragPortId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarSize, setSidebarSize] = useState<"compact" | "normal" | "wide">("normal");
-  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [sidebarWidth, setSidebarWidth] = useState(304);
   const [detailsOpen, setDetailsOpen] = useState(true);
-  const [detailsWidth, setDetailsWidth] = useState(600);
+  const [detailsWidth, setDetailsWidth] = useState(360);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [selectedDeviceTemplateSlug, setSelectedDeviceTemplateSlug] = useState<string | null>(null);
   const [activeSiteId, setActiveSiteId] = useState("shanghai");
+  const [workbenchMode, setWorkbenchMode] = useState<"overview" | "site">("overview");
   const [customSites, setCustomSites] = useState<SitePoint[]>([]);
   const [customSitesReady, setCustomSitesReady] = useState(false);
   const [showNewSiteForm, setShowNewSiteForm] = useState(false);
@@ -247,7 +339,8 @@ export default function DashboardClient({
   const sitePoints = useMemo(() => [...defaultSitePoints, ...customSites], [customSites]);
   const siteSummaries = useMemo(() => buildSiteSummaries(sitePoints, data.racks, data.cables), [sitePoints, data.racks, data.cables]);
   const countrySiteGroups = useMemo(() => groupSitesByCountry(siteSummaries), [siteSummaries]);
-  const activeSite = siteSummaries.find((site) => site.id === activeSiteId) || siteSummaries[0];
+  const selectedSite = siteSummaries.find((site) => site.id === activeSiteId) || siteSummaries[0];
+  const activeSite = workbenchMode === "site" ? selectedSite : null;
   const orderedCountrySiteGroups = useMemo(() => {
     if (!activeSite) return countrySiteGroups;
     return [...countrySiteGroups].sort((a, b) => {
@@ -256,12 +349,26 @@ export default function DashboardClient({
       return 0;
     });
   }, [activeSite, countrySiteGroups]);
-  const activeRack = data.racks.find((rack) => rack.id === activeRackId) || null;
+  const activeRack = workbenchMode === "site" ? data.racks.find((rack) => rack.id === activeRackId) || null : null;
+  const officeRackOverviewRacks = useMemo(
+    () => getOfficeRackOverviewRacks(activeRack, activeSite?.racks || []),
+    [activeRack, activeSite?.racks]
+  );
   const selectedCable = selectedCableId ? cableById.get(selectedCableId) || null : null;
   const selectedPort = selectedPortId ? portById.get(selectedPortId) || null : null;
   const selectedDevice = selectedDeviceId
     ? allDevices.find((device) => device.id === selectedDeviceId) || null
     : selectedPort?.device || selectedCable?.endpointAPort.device || null;
+  const selectedDeviceTemplate = selectedDeviceTemplateSlug
+    ? rackulaGenericDeviceTypes.find((template) => template.slug === selectedDeviceTemplateSlug) || null
+    : null;
+  const filteredDeviceTemplates = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return rackulaGenericDeviceTypes;
+    return rackulaGenericDeviceTypes.filter((template) =>
+      `${template.model} ${template.slug} ${template.category} ${template.heightU}U`.toLowerCase().includes(normalizedQuery)
+    );
+  }, [query]);
   const selectedPortCable = selectedPort ? findCableForPort(selectedPort.id, data.cables) : null;
   const pendingEndpoint = pendingEndpointId ? portById.get(pendingEndpointId) || null : null;
   const queuedPortIds = useMemo(() => {
@@ -279,6 +386,7 @@ export default function DashboardClient({
   const routeEnd = selectedPort ? getTraceRemoteEnd(selectedPort.id, selectedTrace) : null;
   const canEdit = roleRank(currentUser.role) >= roleRank("SURVEYOR");
   const canReview = roleRank(currentUser.role) >= roleRank("REVIEWER");
+  const canAdmin = roleRank(currentUser.role) >= roleRank("ADMIN");
 
   useEffect(() => {
     const cable = searchParams.get("cable");
@@ -321,7 +429,7 @@ export default function DashboardClient({
         setSidebarWidth(clamp(resize.startWidth + deltaX, 230, 520));
         return;
       }
-      setDetailsWidth(clamp(resize.startWidth - deltaX, 460, 860));
+      setDetailsWidth(clamp(resize.startWidth - deltaX, 320, 520));
     }
 
     function onPointerUp() {
@@ -361,6 +469,30 @@ export default function DashboardClient({
     await refresh();
   }
 
+  async function deleteSelectedDevice() {
+    if (!selectedDevice || busy) return;
+    if (!window.confirm(t("device.deleteConfirm", { device: selectedDevice.name }))) return;
+
+    setBusy(true);
+    const response = await fetch(`/api/devices/${selectedDevice.id}`, {
+      method: "DELETE",
+      headers: { "x-csrf-token": csrfToken }
+    });
+    setBusy(false);
+
+    if (response.ok) {
+      setMessage(t("device.deleted", { device: selectedDevice.name }));
+      setSelectedDeviceId(null);
+      setSelectedPortId(null);
+      setSelectedCableId(null);
+      await refresh();
+      return;
+    }
+
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    setMessage(translateApiError(t, payload?.error, "device.deleteFailed"));
+  }
+
   async function uploadPhoto(file: File) {
     const targetCableId = selectedCable?.id || selectedPortCable?.id;
     if (!targetCableId && !selectedPort) return;
@@ -395,12 +527,23 @@ export default function DashboardClient({
     setSelectedPortId(portId);
     setSelectedDeviceId(port?.device.id || null);
     setSelectedCableId(findCableForPort(portId, data.cables)?.id || null);
+    setSelectedDeviceTemplateSlug(null);
     setDrawerMode("details");
     setDetailsOpen(true);
   }
 
   function selectDeviceForDetails(deviceId: string) {
     setSelectedDeviceId(deviceId);
+    setSelectedPortId(null);
+    setSelectedCableId(null);
+    setSelectedDeviceTemplateSlug(null);
+    setDrawerMode("details");
+    setDetailsOpen(true);
+  }
+
+  function selectDeviceTemplateForDetails(templateSlug: string) {
+    setSelectedDeviceTemplateSlug(templateSlug);
+    setSelectedDeviceId(null);
     setSelectedPortId(null);
     setSelectedCableId(null);
     setDrawerMode("details");
@@ -535,6 +678,7 @@ export default function DashboardClient({
       setSelectedCableId(createdCable.id);
       setSelectedPortId(createdCable.endpointBPortId);
       setSelectedDeviceId(createdCable.endpointBPort.device.id);
+      setSelectedDeviceTemplateSlug(null);
       setDrawerMode("details");
       setDetailsOpen(true);
     }
@@ -553,12 +697,27 @@ export default function DashboardClient({
     setMessage(t("patch.cleared"));
   }
 
+  function showGlobalOverview() {
+    setWorkbenchMode("overview");
+    setActiveRackId("");
+    setSelectedDeviceId(null);
+    setSelectedPortId(null);
+    setSelectedCableId(null);
+    setSelectedDeviceTemplateSlug(null);
+    setDrawerMode("details");
+    setViewMode("select");
+    setMessage("");
+    window.requestAnimationFrame(() => resetRackView("smooth"));
+  }
+
   function selectSite(siteId: string) {
     const site = siteSummaries.find((item) => item.id === siteId);
+    setWorkbenchMode("site");
     setActiveSiteId(siteId);
     setSelectedDeviceId(null);
     setSelectedPortId(null);
     setSelectedCableId(null);
+    setSelectedDeviceTemplateSlug(null);
     setDrawerMode("details");
     if (site?.racks[0]) {
       setActiveRackId(site.racks[0].id);
@@ -567,6 +726,16 @@ export default function DashboardClient({
     }
     setActiveRackId("");
     setMessage(t("patch.siteNoRack", { site: site ? siteLabel(site, t) : t("siteMap.site") }));
+  }
+
+  function selectRack(rackId: string) {
+    setWorkbenchMode("site");
+    setActiveRackId(rackId);
+    setSelectedDeviceId(null);
+    setSelectedPortId(null);
+    setSelectedCableId(null);
+    setSelectedDeviceTemplateSlug(null);
+    setDrawerMode("details");
   }
 
   function addCustomSite(event: React.FormEvent<HTMLFormElement>) {
@@ -592,6 +761,7 @@ export default function DashboardClient({
     setCustomSites((sites) => [...sites, site]);
     setNewSite({ country: "", city: "", address: "" });
     setShowNewSiteForm(false);
+    setWorkbenchMode("site");
     setActiveSiteId(site.id);
     setActiveRackId("");
     setMessage(t("siteManager.added", { site: formatSiteDisplay(site, t) }));
@@ -701,16 +871,21 @@ export default function DashboardClient({
 
   const filteredCables = data.cables.filter((cable) => {
     const text = `${cable.cableId} ${cable.label} ${formatEndpoint(cable.endpointAPort)} ${formatEndpoint(cable.endpointBPort)}`.toLowerCase();
-    return text.includes(query.toLowerCase()) && cableBelongsToSite(cable, activeSite);
+    return text.includes(query.toLowerCase()) && cableBelongsToSite(cable, activeSite || undefined);
   });
 
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
-          <p className="eyebrow">{t("app.brand")}</p>
-          <h1>{t("app.dashboardTitle")}</h1>
-        </div>
+        <button className="brand-home-button" onClick={showGlobalOverview} title={t("action.globalMap")} type="button">
+          <span className="brand-home-icon" aria-hidden="true">
+            <Home size={17} />
+          </span>
+          <span>
+            <span className="eyebrow">{t("app.brand")}</span>
+            <span className="brand-home-title">{t("app.dashboardTitle")}</span>
+          </span>
+        </button>
         <div className="search-box">
           <Search size={18} />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("app.searchPlaceholder")} />
@@ -725,6 +900,19 @@ export default function DashboardClient({
                 type="button"
               >
                 {option.shortLabel}
+              </button>
+            ))}
+          </div>
+          <div className="theme-toggle" aria-label={t("theme.label")}>
+            {themeOptions.map((option) => (
+              <button
+                key={option.value}
+                className={theme === option.value ? "active" : ""}
+                onClick={() => setTheme(option.value)}
+                title={t(option.value === "light" ? "theme.light" : "theme.dark")}
+                type="button"
+              >
+                {option.icon === "sun" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             ))}
           </div>
@@ -760,7 +948,7 @@ export default function DashboardClient({
                 className="pane-toggle"
                 onClick={() => {
                   setSidebarSize((size) => size === "compact" ? "normal" : "compact");
-                  setSidebarWidth((width) => width <= 260 ? 320 : 250);
+                  setSidebarWidth((width) => width <= 260 ? 304 : 248);
                 }}
                 title={sidebarWidth <= 260 ? t("action.restoreLeftPane") : t("action.compactLeftPane")}
               >
@@ -770,7 +958,7 @@ export default function DashboardClient({
                 className="pane-toggle"
                 onClick={() => {
                   setSidebarSize((size) => size === "wide" ? "normal" : "wide");
-                  setSidebarWidth((width) => width >= 400 ? 320 : 420);
+                  setSidebarWidth((width) => width >= 400 ? 304 : 408);
                 }}
                 title={sidebarWidth >= 400 ? t("action.restoreLeftPane") : t("action.expandLeftPane")}
               >
@@ -837,7 +1025,7 @@ export default function DashboardClient({
               >
                 <div className="country-heading">
                   <strong>{countryLabel(countryGroup.country, t)}</strong>
-                  <small>{t("siteMap.rackLineStats", { racks: countryGroup.rackCount, lines: countryGroup.lineCount })}</small>
+                  <small>{formatRackLineStats(countryGroup.rackCount, countryGroup.lineCount, t)}</small>
                 </div>
                 <div className="city-list">
                   {countryGroup.sites.map((site) => (
@@ -845,7 +1033,11 @@ export default function DashboardClient({
                       <div className="city-row">
                         <button onClick={() => selectSite(site.id)}>
                           <span>{siteLabel(site, t)}</span>
-                          <small>{site.address || (site.custom ? t("siteManager.custom") : t("siteManager.default"))}</small>
+                          <small>
+                            {site.address || (site.custom ? t("siteManager.custom") : t("siteManager.default"))}
+                            {" · "}
+                            {formatRackLineStats(site.racks.length, site.lineCount, t)}
+                          </small>
                         </button>
                         {site.custom ? (
                           <button className="delete-site-button" onClick={() => removeCustomSite(site.id)} title={t("siteManager.delete")}>
@@ -853,16 +1045,16 @@ export default function DashboardClient({
                           </button>
                         ) : null}
                       </div>
-                      <small className="city-stats">{t("siteMap.rackLineStats", { racks: site.racks.length, lines: site.lineCount })}</small>
                       {site.racks.length ? (
                         <div className="rack-tabs">
                           {site.racks.map((rack) => (
                             <button
                               key={rack.id}
-                              className={rack.id === activeRack?.id ? "active" : ""}
-                              onClick={() => setActiveRackId(rack.id)}
+                              className={rack.id === activeRack?.id ? "rack-selected" : ""}
+                              aria-current={rack.id === activeRack?.id ? "true" : undefined}
+                              onClick={() => selectRack(rack.id)}
                             >
-                              <strong>{rack.code}</strong>
+                              <strong>{rack.room} / {rack.code}</strong>
                               <small>{rack.heightU}U</small>
                             </button>
                           ))}
@@ -877,22 +1069,20 @@ export default function DashboardClient({
             ))}
           </div>
 
+          <DeviceTypeLibrary
+            templates={filteredDeviceTemplates}
+            selectedTemplateSlug={selectedDeviceTemplate?.slug || null}
+            onSelectTemplate={selectDeviceTemplateForDetails}
+            t={t}
+          />
+
           <div className="section-title">{t("sidebar.cables")}</div>
           <div className="cable-list">
             {filteredCables.map((cable) => (
-              <button
-                key={cable.id}
-                className={selectedCableId === cable.id ? "cable-row active" : "cable-row"}
-                onClick={() => {
-                  setSelectedCableId(cable.id);
-                  setSelectedDeviceId(cable.endpointAPort.device.id);
-                  setSelectedPortId(null);
-                  setDrawerMode("details");
-                  setDetailsOpen(true);
-                }}
-              >
+              <div key={cable.id} className={selectedCableId === cable.id ? "cable-row active" : "cable-row"}>
                 <input
                   type="checkbox"
+                  aria-label={t("sidebar.selectCable", { cable: cable.cableId })}
                   checked={selectedCableIds.includes(cable.id)}
                   onChange={(event) => {
                     event.stopPropagation();
@@ -902,14 +1092,37 @@ export default function DashboardClient({
                   }}
                   onClick={(event) => event.stopPropagation()}
                 />
-                <span>
-                  <strong>{cable.cableId}</strong>
-                  <small>{cable.label}</small>
-                </span>
-                <i className={`status-dot ${cable.status}`} />
-              </button>
+                <button
+                  type="button"
+                  className="cable-open"
+                  title={cable.label}
+                  onClick={() => {
+                    const cableRackId = cable.endpointAPort.device.rackId || cable.endpointBPort.device.rackId || "";
+                    if (cableRackId) {
+                      setWorkbenchMode("site");
+                      setActiveRackId(cableRackId);
+                    }
+                    setSelectedCableId(cable.id);
+                    setSelectedDeviceId(cable.endpointAPort.device.id);
+                    setSelectedPortId(null);
+                    setSelectedDeviceTemplateSlug(null);
+                    setDrawerMode("details");
+                    setDetailsOpen(true);
+                  }}
+                >
+                  <span className="cable-id" title={cable.cableId}>{cable.cableId}</span>
+                  <span className="cable-route">
+                    <span title={formatCableListEndpoint(cable.endpointAPort)}>{formatCableListEndpoint(cable.endpointAPort)}</span>
+                    <span className="cable-route-arrow">-&gt;</span>
+                    <span title={formatCableListEndpoint(cable.endpointBPort)}>{formatCableListEndpoint(cable.endpointBPort)}</span>
+                  </span>
+                </button>
+                <i className={`status-dot ${cable.status}`} aria-hidden="true" />
+              </div>
             ))}
-            {!filteredCables.length ? <div className="site-empty">{t("sidebar.noMatchingCables")}</div> : null}
+            {!filteredCables.length ? (
+              <div className="site-empty">{t(workbenchMode === "overview" ? "sidebar.chooseSiteCables" : "sidebar.noMatchingCables")}</div>
+            ) : null}
           </div>
         </aside>
 
@@ -943,70 +1156,73 @@ export default function DashboardClient({
           onClickCapture={handleRackClickCapture}
           onWheel={handleRackWheel}
         >
-          <div className="rack-view-toolbar">
-            <button
-              className={viewMode === "select" ? "active" : ""}
-              onClick={() => setViewMode("select")}
-              title={t("toolbar.selectTitle")}
-              aria-pressed={viewMode === "select"}
-            >
-              <MousePointer2 size={16} />
-              {t("toolbar.select")}
-            </button>
-            <button
-              className={viewMode === "patch" ? "active" : ""}
-              onClick={() => {
-                setViewMode("patch");
-                setDragPortId(null);
-              }}
-              title={t("toolbar.patchTitle")}
-              aria-pressed={viewMode === "patch"}
-            >
-              <Cable size={16} />
-              {t("toolbar.patch")}
-            </button>
-            <button
-              className={viewMode === "pan" ? "active" : ""}
-              onClick={() => {
-                setViewMode("pan");
-                setDragPortId(null);
-              }}
-              title={t("toolbar.panTitle")}
-              aria-pressed={viewMode === "pan"}
-            >
-              <Hand size={16} />
-              {t("toolbar.pan")}
-            </button>
-            <button className="reset-view-button" onClick={() => resetRackView()} title={t("toolbar.resetView")}>
-              <RotateCcw size={16} />
-            </button>
-            {pendingConnections.length ? (
-              <>
-                <span className="patch-count">{pendingConnections.length}</span>
-                <button onClick={completePendingConnections} disabled={busy || !canEdit} title={t("action.complete")}>
-                  <Check size={16} />
-                  {t("action.complete")}
-                </button>
-              </>
-            ) : null}
-          </div>
+          {workbenchMode === "site" && activeRack ? (
+            <div className="rack-view-toolbar">
+              <button
+                className={viewMode === "select" ? "active" : ""}
+                onClick={() => setViewMode("select")}
+                title={t("toolbar.selectTitle")}
+                aria-pressed={viewMode === "select"}
+              >
+                <MousePointer2 size={16} />
+                {t("toolbar.select")}
+              </button>
+              <button
+                className={viewMode === "patch" ? "active" : ""}
+                onClick={() => {
+                  setViewMode("patch");
+                  setDragPortId(null);
+                }}
+                title={t("toolbar.patchTitle")}
+                aria-pressed={viewMode === "patch"}
+              >
+                <Cable size={16} />
+                {t("toolbar.patch")}
+              </button>
+              <button
+                className={viewMode === "pan" ? "active" : ""}
+                onClick={() => {
+                  setViewMode("pan");
+                  setDragPortId(null);
+                }}
+                title={t("toolbar.panTitle")}
+                aria-pressed={viewMode === "pan"}
+              >
+                <Hand size={16} />
+                {t("toolbar.pan")}
+              </button>
+              <button className="reset-view-button" onClick={() => resetRackView()} title={t("toolbar.resetView")}>
+                <RotateCcw size={16} />
+              </button>
+              {pendingConnections.length ? (
+                <>
+                  <span className="patch-count">{pendingConnections.length}</span>
+                  <button onClick={completePendingConnections} disabled={busy || !canEdit} title={t("action.complete")}>
+                    <Check size={16} />
+                    {t("action.complete")}
+                  </button>
+                </>
+              ) : null}
+            </div>
+          ) : null}
           <div
             className="rack-pan-content"
             style={{
               transform: `translate3d(${canvasOffset.x}px, ${canvasOffset.y}px, 0)`
             }}
           >
-            {activeRack ? (
-              <>
+            {workbenchMode === "overview" ? (
               <SiteMapNavigator
                 sites={siteSummaries}
                 activeSiteId={activeSite?.id || ""}
-                activeRack={activeRack}
+                activeRack={null}
                 onSelectSite={selectSite}
                 t={t}
               />
+            ) : activeRack ? (
               <RackView
                 rack={activeRack}
+                racks={officeRackOverviewRacks}
                 cables={data.cables}
                 canEdit={canEdit}
                 isPanMode={viewMode === "pan"}
@@ -1022,20 +1238,12 @@ export default function DashboardClient({
                   addPendingConnection(sourcePortId, targetPortId);
                 }}
                 onSelectDevice={selectDeviceForDetails}
+                onSelectRack={selectRack}
                 onSelectPort={handlePortSelection}
                 t={t}
               />
-              </>
-            ) : (
-              <SiteMapNavigator
-                sites={siteSummaries}
-                activeSiteId={activeSite?.id || ""}
-                activeRack={null}
-                onSelectSite={selectSite}
-                t={t}
-              />
-            )}
-            {!activeRack ? (
+            ) : null}
+            {workbenchMode === "site" && !activeRack ? (
               <div className="site-empty-state">
                 <strong>{t("siteMap.noRackData", { site: activeSite ? siteLabel(activeSite, t) : t("siteMap.site") })}</strong>
                 <span>{t("siteMap.noRackHelp")}</span>
@@ -1115,12 +1323,14 @@ export default function DashboardClient({
               cable={selectedCable || selectedPortCable}
               port={selectedPort}
               device={selectedDevice}
+              deviceTemplate={selectedDeviceTemplate}
               cables={data.cables}
               directPeer={directPeer}
               routeEnd={routeEnd}
               trace={selectedTrace}
               canEdit={canEdit}
               canReview={canReview}
+              canAdmin={canAdmin}
               busy={busy}
               queuedPortIds={queuedPortIds}
               pendingEndpointId={pendingEndpointId}
@@ -1134,23 +1344,13 @@ export default function DashboardClient({
               }}
               onSelectPort={handlePortSelection}
               onStatus={updateCableStatus}
+              onDeleteDevice={deleteSelectedDevice}
               onPhoto={uploadPhoto}
               t={t}
             />
           )}
 
           {message ? <p className="toast">{message}</p> : null}
-
-          <div className="section-title">{t("details.audit")}</div>
-          <div className="audit-list">
-            {data.auditLogs.slice(0, 10).map((audit) => (
-              <div key={audit.id}>
-                <strong>{audit.action}</strong>
-                <span>{audit.actor?.name || "system"}</span>
-                <small>{new Date(audit.createdAt).toLocaleString()}</small>
-              </div>
-            ))}
-          </div>
         </aside>
 
         {!detailsOpen ? (
@@ -1160,6 +1360,69 @@ export default function DashboardClient({
         ) : null}
       </section>
     </main>
+  );
+}
+
+function DeviceTypeLibrary({
+  templates,
+  selectedTemplateSlug,
+  onSelectTemplate,
+  t
+}: {
+  templates: RackulaDeviceTemplate[];
+  selectedTemplateSlug: string | null;
+  onSelectTemplate: (templateSlug: string) => void;
+  t: Translate;
+}) {
+  const groups = rackulaDeviceCategoryOrder
+    .map((category) => ({
+      category,
+      templates: templates.filter((template) => template.category === category)
+    }))
+    .filter((group) => group.templates.length);
+
+  return (
+    <section className="device-type-library">
+      <div className="device-type-library-head">
+        <div className="section-title">{t("deviceLibrary.title")}</div>
+        <span>{t("deviceLibrary.count", { count: templates.length })}</span>
+      </div>
+      {groups.length ? (
+        <div className="device-type-groups">
+          {groups.map((group) => (
+            <section className="device-type-group" key={group.category}>
+              <div className="device-type-category">
+                <strong>{rackulaDeviceCategoryLabel(group.category, t)}</strong>
+                <small>{group.templates.length}</small>
+              </div>
+              <div className="device-type-list">
+                {group.templates.map((template) => (
+                  <button
+                    key={template.slug}
+                    type="button"
+                    className={selectedTemplateSlug === template.slug ? "device-type-row active" : "device-type-row"}
+                    onClick={() => onSelectTemplate(template.slug)}
+                  >
+                    <span className="device-type-swatch" style={{ "--device-type-color": template.color } as React.CSSProperties} />
+                    <span className="device-type-row-main">
+                      <strong>{template.model}</strong>
+                      <small>{template.slug}</small>
+                    </span>
+                    <span className="device-type-tags">
+                      <span>{formatRackulaTemplateHeight(template)}</span>
+                      {template.slotWidth === 1 ? <span>{t("deviceLibrary.halfWidth")}</span> : null}
+                      {!template.fullDepth ? <span>{t("deviceLibrary.halfDepth")}</span> : null}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="site-empty">{t("deviceLibrary.noMatches")}</div>
+      )}
+    </section>
   );
 }
 
@@ -1176,10 +1439,25 @@ function SiteMapNavigator({
   onSelectSite: (siteId: string) => void;
   t: Translate;
 }) {
-  const activeSite = sites.find((site) => site.id === activeSiteId) || sites[0];
+  const activeSite = activeSiteId ? sites.find((site) => site.id === activeSiteId) || null : null;
+  const totalRackCount = sites.reduce((count, site) => count + site.racks.length, 0);
+  const totalLineCount = sites.reduce((count, site) => count + site.lineCount, 0);
+  const siteById = new Map(sites.map((site) => [site.id, site]));
+  const visibleWanLinks = siteWanLinks
+    .map((link) => {
+      const from = siteById.get(link.from);
+      const to = siteById.get(link.to);
+      return from && to ? { ...link, fromSite: from, toSite: to } : null;
+    })
+    .filter(Boolean) as Array<SiteWanLink & { fromSite: SiteSummary; toSite: SiteSummary }>;
+  const activeLinkSiteIds = new Set(
+    visibleWanLinks
+      .filter((link) => activeSite && (link.from === activeSite.id || link.to === activeSite.id))
+      .flatMap((link) => [link.from, link.to])
+  );
 
   return (
-    <section className="site-map-card" aria-label="APAC site map">
+    <section className="site-map-card wan-map-card" aria-label="APAC WAN site map">
       <div className="site-map-head">
         <div>
           <div className="section-title">{t("siteMap.kicker")}</div>
@@ -1194,62 +1472,301 @@ function SiteMapNavigator({
         </div>
       </div>
 
-      <div className="site-map-canvas">
-        <svg className="site-map-lines" viewBox="0 0 100 100" aria-hidden="true">
-          <path className="site-map-backbone" d="M67 42 C64 56 58 63 58 72 C65 78 72 82 78 86" />
-          {activeSite
-            ? sites.filter((site) => site.id !== activeSite.id).map((site) => (
+      <div className="site-map-canvas wan-map-canvas">
+        <WorldBasemap t={t} />
+        <svg className="site-map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          {visibleWanLinks.flatMap((link) => {
+            const circuits = link.circuits || 1;
+            return Array.from({ length: circuits }, (_, index) => (
               <path
-                key={site.id}
-                className={site.racks.length ? "site-link active" : "site-link"}
-                d={`M${activeSite.x} ${activeSite.y} C${(activeSite.x + site.x) / 2} ${activeSite.y}, ${(activeSite.x + site.x) / 2} ${site.y}, ${site.x} ${site.y}`}
+                key={`${link.from}-${link.to}-${index}`}
+                className={[
+                  "wan-link",
+                  circuits > 1 ? "multi-circuit" : "",
+                  `utilization-${link.utilization}`,
+                  activeSite && (link.from === activeSite.id || link.to === activeSite.id) ? "focus" : ""
+                ].join(" ")}
+                d={buildWanLinkPath(link, index, circuits)}
               />
-            ))
-            : null}
+            ));
+          })}
+          {visibleWanLinks.filter((link) => (link.circuits || 1) > 1).map((link) => {
+            const labelPoint = getWanLinkLabelPoint(link);
+            return (
+              <text key={`${link.from}-${link.to}-label`} className="wan-link-count" x={labelPoint.x} y={labelPoint.y}>
+                {link.circuits}x
+              </text>
+            );
+          })}
+          {sites.map((site) => {
+            const anchor = getSiteAnchor(site);
+            return (
+              <path
+                key={`${site.id}-leader`}
+                className="geo-site-leader"
+                d={`M${anchor.x} ${anchor.y} L${site.x} ${site.y}`}
+              />
+            );
+          })}
         </svg>
-        <div className="site-region-label north">{t("siteMap.regionNortheast")}</div>
-        <div className="site-region-label west">{t("siteMap.regionThailand")}</div>
-        <div className="site-region-label south">{t("siteMap.regionAustralia")}</div>
         {sites.map((site) => (
           <button
             key={site.id}
             className={[
               "site-node",
+              "geo-callout",
               site.id === activeSite?.id ? "active" : "",
-              site.racks.length ? "ready" : "empty"
+              site.racks.length ? "ready" : "empty",
+              activeLinkSiteIds.has(site.id) ? "linked" : ""
             ].join(" ")}
-            style={{ "--site-x": `${site.x}%`, "--site-y": `${site.y}%` } as React.CSSProperties}
+            style={{
+              "--site-x": `${site.x}%`,
+              "--site-y": `${site.y}%`,
+              "--site-accent": getSiteAccent(site)
+            } as React.CSSProperties}
             onClick={() => onSelectSite(site.id)}
+            aria-label={`${formatSiteDisplay(site, t)} · ${site.racks.length ? t("siteMap.nodeStats", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount }) : t("siteMap.notImported")}`}
           >
             <em>{countryLabel(site.country, t)}</em>
             <strong>{siteLabel(site, t)}</strong>
-            <span>{site.racks.length ? t("siteMap.nodeStats", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount }) : t("siteMap.notImported")}</span>
+            {site.racks.length ? <span>{t("siteMap.nodeStatsMini", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount })}</span> : null}
           </button>
         ))}
-        <div className="site-map-legend">
-          <span><i className="ready" />{t("siteMap.readyLegend")}</span>
-          <span><i className="empty" />{t("siteMap.pendingLegend")}</span>
-          <span><i className="selected" />{t("siteMap.selectedLegend")}</span>
+        {sites.map((site) => {
+          const anchor = getSitePinPosition(site);
+          return (
+            <button
+              key={`${site.id}-pin`}
+              className={["geo-pin", site.id === activeSite?.id ? "active" : "", site.racks.length ? "ready" : "empty"].join(" ")}
+              style={{
+                "--pin-x": `${anchor.x}%`,
+                "--pin-y": `${anchor.y}%`,
+                "--site-accent": getSiteAccent(site)
+              } as React.CSSProperties}
+              onClick={() => onSelectSite(site.id)}
+              aria-label={`${formatSiteDisplay(site, t)} · ${site.racks.length ? t("siteMap.nodeStats", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount }) : t("siteMap.notImported")}`}
+            />
+          );
+        })}
+      </div>
+
+      <div className="link-utilization-legend">
+        <strong>{t("siteMap.linkUtilization")}</strong>
+        <div>
+          {linkUtilizationLegend.map((item) => (
+            <span key={item.utilization}>
+              <i className={`utilization-${item.utilization}`} />
+              {item.labelKey ? t(item.labelKey) : item.label}
+            </span>
+          ))}
         </div>
       </div>
 
       <div className="site-map-footer">
         <div>
-          <span>{t("siteMap.activeSite")}</span>
-          <strong>{activeSite ? formatSiteDisplay(activeSite, t) : t("siteMap.site")}</strong>
+          <span>{activeSite ? t("siteMap.activeSite") : t("siteMap.globalOverview")}</span>
+          <strong>{activeSite ? formatSiteDisplay(activeSite, t) : t("siteMap.globalMapHome")}</strong>
           {activeSite?.address ? <small>{t("siteMap.address")}: {activeSite.address}</small> : null}
         </div>
         <div>
-          <span>{activeSite ? t("siteMap.rackSummary", { racks: activeSite.racks.length, devices: activeSite.deviceCount, lines: activeSite.lineCount }) : ""}</span>
-          <strong>{activeRack ? t("siteMap.activeRackSummary", { room: activeRack.room, rack: activeRack.code, devices: activeRack.devices.length }) : t("siteMap.noRackSelected")}</strong>
+          <span>
+            {activeSite
+              ? t("siteMap.rackSummary", { racks: activeSite.racks.length, devices: activeSite.deviceCount, lines: activeSite.lineCount })
+              : t("siteMap.globalSummary", { sites: sites.length, racks: totalRackCount, lines: totalLineCount })}
+          </span>
+          <strong>
+            {activeRack
+              ? t("siteMap.activeRackSummary", { room: activeRack.room, rack: activeRack.code, devices: activeRack.devices.length })
+              : activeSite
+                ? t("siteMap.noRackSelected")
+                : t("siteMap.chooseSite")}
+          </strong>
         </div>
       </div>
     </section>
   );
 }
 
+function WorldBasemap({ t }: { t: Translate }) {
+  return (
+    <svg className="real-world-map" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <rect className="map-ocean" x="0" y="0" width="100" height="100" />
+      <g className="map-graticule">
+        {mapMeridians.map((longitude) => (
+          <path key={`lon-${longitude}`} d={buildLongitudeLine(longitude)} />
+        ))}
+        {mapParallels.map((latitude) => (
+          <path key={`lat-${latitude}`} d={buildLatitudeLine(latitude)} />
+        ))}
+      </g>
+      <g className="world-land">
+        {worldMapPaths.map((path, index) => (
+          <path key={index} d={path} fillRule="evenodd" />
+        ))}
+      </g>
+      <g className="map-labels">
+        {mapLabels.map((label) => {
+          const point = projectMapPoint(label.lon, label.lat);
+          return (
+            <text
+              key={label.key}
+              className={`map-label ${label.kind}`}
+              x={point.x + (label.dx || 0)}
+              y={point.y + (label.dy || 0)}
+            >
+              {t(label.key)}
+            </text>
+          );
+        })}
+      </g>
+    </svg>
+  );
+}
+
+const mapMeridians = [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150];
+const mapParallels = [-45, -20, 0, 20, 40, 60];
+const mapLabels: Array<{ key: TranslationKey; lon: number; lat: number; kind: "land" | "water"; dx?: number; dy?: number }> = [
+  { key: "mapLabel.northAmerica", lon: -102, lat: 44, kind: "land" },
+  { key: "mapLabel.southAmerica", lon: -61, lat: -18, kind: "land" },
+  { key: "mapLabel.europe", lon: 18, lat: 49, kind: "land" },
+  { key: "mapLabel.russia", lon: 70, lat: 55, kind: "land" },
+  { key: "mapLabel.kazakhstan", lon: 67, lat: 47, kind: "land" },
+  { key: "mapLabel.india", lon: 78, lat: 22, kind: "land" },
+  { key: "mapLabel.china", lon: 104, lat: 34, kind: "land", dy: 1.5 },
+  { key: "mapLabel.australia", lon: 134, lat: -25, kind: "land" },
+  { key: "mapLabel.indonesia", lon: 119, lat: -4, kind: "land", dy: 2 },
+  { key: "mapLabel.atlanticOcean", lon: -35, lat: 7, kind: "water" },
+  { key: "mapLabel.indianOcean", lon: 70, lat: -21, kind: "water" },
+  { key: "mapLabel.southChinaSea", lon: 115, lat: 14, kind: "water", dy: 1.8 },
+  { key: "mapLabel.pacificOcean", lon: 150, lat: 4, kind: "water" }
+];
+
+function buildLongitudeLine(longitude: number) {
+  const points = [worldMapViewport.minLat, -20, 0, 20, 40, worldMapViewport.maxLat]
+    .map((latitude) => projectMapPoint(longitude, latitude));
+  return points.map((point, index) => `${index ? "L" : "M"}${point.x} ${point.y}`).join("");
+}
+
+function buildLatitudeLine(latitude: number) {
+  const points = [worldMapViewport.minLon, -120, -60, 0, 60, 120, worldMapViewport.maxLon]
+    .map((longitude) => projectMapPoint(longitude, latitude));
+  return points.map((point, index) => `${index ? "L" : "M"}${point.x} ${point.y}`).join("");
+}
+
+function getSiteAnchor(site: SiteSummary | SitePoint) {
+  return {
+    x: site.geoX ?? site.x,
+    y: site.geoY ?? site.y
+  };
+}
+
+function getSitePinPosition(site: SiteSummary | SitePoint) {
+  const anchor = getSiteAnchor(site);
+  const closeSiteOffsets: Record<string, { x: number; y: number }> = {
+    jakarta: { x: -0.55, y: 0.45 },
+    subang: { x: 0.55, y: -0.45 }
+  };
+  const offset = closeSiteOffsets[site.id] || { x: 0, y: 0 };
+  return {
+    x: clamp(anchor.x + offset.x, 1, 99),
+    y: clamp(anchor.y + offset.y, 1, 99)
+  };
+}
+
+function getSiteAccent(site: Pick<SitePoint, "id" | "country">) {
+  const siteAccents: Record<string, string> = {
+    shanghai: "#0a84ff",
+    yanzhou: "#5856d6",
+    shenzhou: "#7c3aed",
+    jiaozuo: "#00a6c8",
+    singapore: "#34c759",
+    sydney: "#ffcc00",
+    seoul: "#4f7cff",
+    tokyo: "#00c7be",
+    bangkok: "#ff9f0a",
+    milan: "#ff6b35",
+    jakarta: "#30d158",
+    subang: "#bfde42"
+  };
+  if (siteAccents[site.id]) {
+    return siteAccents[site.id];
+  }
+  const countryAccents: Record<string, string> = {
+    China: "#0a84ff",
+    Singapore: "#34c759",
+    Australia: "#ffcc00",
+    Korea: "#4f7cff",
+    Japan: "#00c7be",
+    Thailand: "#ff9f0a",
+    Italy: "#ff6b35",
+    Indonesia: "#30d158"
+  };
+  return countryAccents[site.country] || "#8e8e93";
+}
+
+function buildWanLinkPath(link: SiteWanLink & { fromSite: SiteSummary; toSite: SiteSummary }, circuitIndex = 0, circuitCount = 1) {
+  const fromAnchor = getSiteAnchor(link.fromSite);
+  const toAnchor = getSiteAnchor(link.toSite);
+  const parallelOffset = circuitCount > 1 ? (circuitIndex - (circuitCount - 1) / 2) * 1.2 : 0;
+  const dx = toAnchor.x - fromAnchor.x;
+  const dy = toAnchor.y - fromAnchor.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const normalX = -dy / length;
+  const normalY = dx / length;
+  const points = [
+    fromAnchor,
+    ...(link.route || []).map((point) => projectMapPoint(point.lon, point.lat)),
+    toAnchor
+  ].map((point) => ({
+    x: point.x + normalX * parallelOffset,
+    y: point.y + normalY * parallelOffset
+  }));
+
+  return buildSmoothCablePath(points);
+}
+
+function buildSmoothCablePath(points: Array<{ x: number; y: number }>) {
+  if (points.length < 2) {
+    return "";
+  }
+
+  const command = [`M${roundPathPoint(points[0].x)} ${roundPathPoint(points[0].y)}`];
+  for (let index = 1; index < points.length; index++) {
+    const previous = points[index - 1];
+    const current = points[index];
+    const beforePrevious = points[index - 2] || previous;
+    const afterCurrent = points[index + 1] || current;
+    const controlOne = {
+      x: previous.x + (current.x - beforePrevious.x) / 6,
+      y: previous.y + (current.y - beforePrevious.y) / 6
+    };
+    const controlTwo = {
+      x: current.x - (afterCurrent.x - previous.x) / 6,
+      y: current.y - (afterCurrent.y - previous.y) / 6
+    };
+    command.push(`C${roundPathPoint(controlOne.x)} ${roundPathPoint(controlOne.y)}, ${roundPathPoint(controlTwo.x)} ${roundPathPoint(controlTwo.y)}, ${roundPathPoint(current.x)} ${roundPathPoint(current.y)}`);
+  }
+  return command.join(" ");
+}
+
+function roundPathPoint(value: number) {
+  return Math.round(value * 10) / 10;
+}
+
+function getWanLinkLabelPoint(link: SiteWanLink & { fromSite: SiteSummary; toSite: SiteSummary }) {
+  const from = link.fromSite;
+  const to = link.toSite;
+  const fromAnchor = getSiteAnchor(from);
+  const toAnchor = getSiteAnchor(to);
+  return {
+    x: Math.round((((fromAnchor.x + toAnchor.x) / 2) + (link.labelDx || 0)) * 10) / 10,
+    y: Math.round((((fromAnchor.y + toAnchor.y) / 2) - 3.2 + (link.labelDy || 0)) * 10) / 10
+  };
+}
+
 function RackView({
   rack,
+  racks,
   cables,
   canEdit,
   isPanMode,
@@ -1262,10 +1779,12 @@ function RackView({
   onDragEnd,
   onDropPort,
   onSelectDevice,
+  onSelectRack,
   onSelectPort,
   t
 }: {
   rack: RackDto;
+  racks?: RackDto[];
   cables: CableDto[];
   canEdit: boolean;
   isPanMode: boolean;
@@ -1278,104 +1797,119 @@ function RackView({
   onDragEnd: () => void;
   onDropPort: (sourcePortId: string, targetPortId: string) => void;
   onSelectDevice: (deviceId: string) => void;
+  onSelectRack: (rackId: string) => void;
   onSelectPort: (portId: string) => void;
   t: Translate;
 }) {
-  const activeDevice =
-    rack.devices.find((device) => device.id === selectedDeviceId) ||
-    rack.devices.find((device) => getCiscoDeviceTemplate(device)) ||
-    rack.devices.find((device) => isPanduitRearDevice(device)) ||
-    rack.devices[0] ||
-    null;
-
   return (
     <div className="rack-workbench">
       <RackCabinetOverview
-        rack={rack}
+        activeRack={rack}
+        racks={racks?.length ? racks : [rack]}
+        cables={cables}
+        canEdit={canEdit}
+        isPanMode={isPanMode}
+        queuedPortIds={queuedPortIds}
+        pendingEndpointId={pendingEndpointId}
+        dragPortId={dragPortId}
         selectedDeviceId={selectedDeviceId}
         selectedPortId={selectedPortId}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDropPort={onDropPort}
         onSelectDevice={onSelectDevice}
+        onSelectRack={onSelectRack}
         onSelectPort={onSelectPort}
         t={t}
       />
-      {activeDevice ? (
-        <section className="rack-device-inspector" aria-label={`${activeDevice.name} port operation panel`}>
-          <div className="rack-device-inspector-head">
-            <div>
-              <span className="section-title">{t("rack.portOperations")}</span>
-              <h2>{activeDevice.name}</h2>
-            </div>
-            <p>{activeDevice.model || activeDevice.vendor || activeDevice.type} · U{activeDevice.uPosition ?? "-"}</p>
-          </div>
-          <DevicePanel
-            device={activeDevice}
+    </div>
+  );
+}
+
+function RackCabinetOverview({
+  activeRack,
+  racks,
+  cables,
+  canEdit,
+  isPanMode,
+  queuedPortIds,
+  pendingEndpointId,
+  dragPortId,
+  selectedDeviceId,
+  selectedPortId,
+  onDragStart,
+  onDragEnd,
+  onDropPort,
+  onSelectDevice,
+  onSelectRack,
+  onSelectPort,
+  t
+}: {
+  activeRack: RackDto;
+  racks: RackDto[];
+  cables: CableDto[];
+  canEdit: boolean;
+  isPanMode: boolean;
+  queuedPortIds: Set<string>;
+  pendingEndpointId: string | null;
+  dragPortId: string | null;
+  selectedDeviceId: string | null;
+  selectedPortId: string | null;
+  onDragStart: (portId: string) => void;
+  onDragEnd: () => void;
+  onDropPort: (sourcePortId: string, targetPortId: string) => void;
+  onSelectDevice: (deviceId: string) => void;
+  onSelectRack: (rackId: string) => void;
+  onSelectPort: (portId: string) => void;
+  t: Translate;
+}) {
+  const displayRacks = racks.slice(0, officeRackOverviewLimit);
+  const selectedPortDeviceId = displayRacks.flatMap((rack) => rack.devices).find((device) => device.ports.some((port) => port.id === selectedPortId))?.id;
+  const selectedDeviceRackId = displayRacks.find((rack) => rack.devices.some((device) => device.id === selectedDeviceId))?.id;
+  const activeDeviceId = (selectedDeviceRackId ? selectedDeviceId || selectedPortDeviceId : selectedPortDeviceId) || undefined;
+  const title = displayRacks.length > 1
+    ? t("rack.officeTitle", { room: activeRack.room, count: displayRacks.length })
+    : `${activeRack.room} / ${activeRack.code}`;
+
+  return (
+    <section
+      className="cabinet-overview"
+      aria-label={`${activeRack.room} rack overview`}
+      style={{ "--office-rack-count": displayRacks.length } as React.CSSProperties}
+    >
+      <div className="cabinet-title">
+        <div>
+          <span className="section-title">{t("rack.layout")}</span>
+          <h2>{title}</h2>
+        </div>
+        <p>{t(displayRacks.length === 1 ? "rack.officeOverview.one" : "rack.officeOverview.other", { count: displayRacks.length })}</p>
+      </div>
+      <div className="cabinet-faces">
+        {displayRacks.map((rack) => (
+          <RackFace
+            key={rack.id}
+            label={`${rack.code} · ${t("rack.frontShort")}`}
+            isActive={rack.id === activeRack.id}
+            rackHeight={rack.heightU}
+            devices={rack.devices.filter((device) => (device.face || "front") !== "rear")}
             cables={cables}
             canEdit={canEdit}
             isPanMode={isPanMode}
             queuedPortIds={queuedPortIds}
             pendingEndpointId={pendingEndpointId}
             dragPortId={dragPortId}
+            selectedDeviceId={activeDeviceId}
             selectedPortId={selectedPortId}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onDropPort={onDropPort}
+            onSelectDevice={(deviceId) => {
+              onSelectRack(rack.id);
+              onSelectDevice(deviceId);
+            }}
             onSelectPort={onSelectPort}
-            t={t}
           />
-        </section>
-      ) : null}
-    </div>
-  );
-}
-
-function RackCabinetOverview({
-  rack,
-  selectedDeviceId,
-  selectedPortId,
-  onSelectDevice,
-  onSelectPort,
-  t
-}: {
-  rack: RackDto;
-  selectedDeviceId: string | null;
-  selectedPortId: string | null;
-  onSelectDevice: (deviceId: string) => void;
-  onSelectPort: (portId: string) => void;
-  t: Translate;
-}) {
-  const frontDevices = rack.devices.filter((device) => (device.face || "front") !== "rear");
-  const rearDevices = rack.devices.filter((device) => device.face === "rear");
-  const selectedPortDeviceId = rack.devices.find((device) => device.ports.some((port) => port.id === selectedPortId))?.id;
-  const activeDeviceId = (rack.devices.some((device) => device.id === selectedDeviceId) ? selectedDeviceId : selectedPortDeviceId) || undefined;
-
-  return (
-    <section className="cabinet-overview" aria-label={`${rack.code} rack unit overview`}>
-      <div className="cabinet-title">
-        <div>
-          <span className="section-title">{t("rack.layout")}</span>
-          <h2>{rack.room} / {rack.code}</h2>
-        </div>
-        <p>{t("rack.realU", { height: rack.heightU })}</p>
-      </div>
-      <div className="cabinet-faces">
-        <RackFace
-          label={t("rack.front")}
-          rackHeight={rack.heightU}
-          devices={frontDevices}
-          selectedDeviceId={activeDeviceId}
-          selectedPortId={selectedPortId}
-          onSelectDevice={onSelectDevice}
-          onSelectPort={onSelectPort}
-        />
-        <RackFace
-          label={t("rack.rear")}
-          rackHeight={rack.heightU}
-          devices={rearDevices}
-          selectedDeviceId={activeDeviceId}
-          selectedPortId={selectedPortId}
-          onSelectDevice={onSelectDevice}
-          onSelectPort={onSelectPort}
-        />
+        ))}
       </div>
     </section>
   );
@@ -1383,25 +1917,49 @@ function RackCabinetOverview({
 
 function RackFace({
   label,
+  isActive,
   rackHeight,
   devices,
+  cables,
+  canEdit,
+  isPanMode,
+  queuedPortIds,
+  pendingEndpointId,
+  dragPortId,
   selectedDeviceId,
   selectedPortId,
+  onDragStart,
+  onDragEnd,
+  onDropPort,
   onSelectDevice,
   onSelectPort
 }: {
   label: string;
+  isActive: boolean;
   rackHeight: number;
   devices: DeviceDto[];
+  cables: CableDto[];
+  canEdit: boolean;
+  isPanMode: boolean;
+  queuedPortIds: Set<string>;
+  pendingEndpointId: string | null;
+  dragPortId: string | null;
   selectedDeviceId?: string;
   selectedPortId: string | null;
+  onDragStart: (portId: string) => void;
+  onDragEnd: () => void;
+  onDropPort: (sourcePortId: string, targetPortId: string) => void;
   onSelectDevice: (deviceId: string) => void;
   onSelectPort: (portId: string) => void;
 }) {
   const units = Array.from({ length: rackHeight }, (_, index) => rackHeight - index);
+  const selectDeviceFromShell = (deviceId: string, target: EventTarget | null) => {
+    if (target instanceof HTMLElement && target.closest(".port-button")) return;
+    onSelectDevice(deviceId);
+  };
 
   return (
-    <div className="cabinet-face">
+    <div className={isActive ? "cabinet-face active" : "cabinet-face"}>
       <div className="cabinet-face-label">{label}</div>
       <div className="cabinet-grid" style={{ "--rack-units": rackHeight } as React.CSSProperties}>
         <div className="cabinet-numbers left">
@@ -1416,26 +1974,43 @@ function RackFace({
             const category = getRackDeviceCategory(device);
 
             return (
-              <button
+              <div
                 key={device.id}
+                role="button"
+                tabIndex={0}
                 className={[
                   "cabinet-device",
                   category,
                   selectedDeviceId === device.id ? "selected" : ""
                 ].join(" ")}
                 style={{ gridRow: `${startRow} / span ${height}` }}
-                onClick={() => {
+                onClick={(event) => {
+                  selectDeviceFromShell(device.id, event.target);
+                }}
+                onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  if (event.target instanceof HTMLElement && event.target.closest(".port-button")) return;
+                  event.preventDefault();
                   onSelectDevice(device.id);
                 }}
-                title={`${device.name} · U${position}${height > 1 ? `-${position + height - 1}` : ""} · ${device.model || ""}`}
+                aria-label={`${device.name} rack device`}
               >
                 <RackDeviceFaceplate
                   device={device}
-                  position={position}
                   height={height}
+                  cables={cables}
+                  canEdit={canEdit}
+                  isPanMode={isPanMode}
+                  queuedPortIds={queuedPortIds}
+                  pendingEndpointId={pendingEndpointId}
+                  dragPortId={dragPortId}
                   selectedPortId={selectedPortId}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onDropPort={onDropPort}
+                  onSelectPort={onSelectPort}
                 />
-              </button>
+              </div>
             );
           })}
         </div>
@@ -1449,14 +2024,32 @@ function RackFace({
 
 function RackDeviceFaceplate({
   device,
-  position,
   height,
-  selectedPortId
+  cables,
+  canEdit,
+  isPanMode,
+  queuedPortIds,
+  pendingEndpointId,
+  dragPortId,
+  selectedPortId,
+  onDragStart,
+  onDragEnd,
+  onDropPort,
+  onSelectPort
 }: {
   device: DeviceDto;
-  position: number;
   height: number;
+  cables: CableDto[];
+  canEdit: boolean;
+  isPanMode: boolean;
+  queuedPortIds: Set<string>;
+  pendingEndpointId: string | null;
+  dragPortId: string | null;
   selectedPortId: string | null;
+  onDragStart: (portId: string) => void;
+  onDragEnd: () => void;
+  onDropPort: (sourcePortId: string, targetPortId: string) => void;
+  onSelectPort: (portId: string) => void;
 }) {
   const ciscoTemplate = getCiscoDeviceTemplate(device);
   const category = getRackDeviceCategory(device);
@@ -1464,15 +2057,15 @@ function RackDeviceFaceplate({
   if (ciscoTemplate?.kind === "router") {
     const groups = (ciscoTemplate.routerGroups || []).slice(0, Math.max(2, height * 2));
     return (
-      <div className="rack-device-faceplate router">
-        <div className="rack-device-u">U{position}{height > 1 ? `-${position + height - 1}` : ""}</div>
-        <div className="rack-device-label">
-          <strong>{device.name}</strong>
-          <small>{device.model || ciscoTemplate.sku}</small>
+      <div className="rack-device-faceplate router rack-device-physical-face" aria-label={`${device.name} front panel`}>
+        <div className="rack-physical-controls" aria-hidden="true">
+          <span className="rack-mini-led" />
+          <span className="rack-control-port" />
+          <span className="rack-control-slot" />
         </div>
-        <div className="rack-mini-router-groups">
+        <div className="rack-mini-router-groups" aria-hidden="true">
           {groups.map((group) => (
-            <span key={group.id}>{group.portNames?.length ? group.portNames.length : group.slotLabels?.length || 1}</span>
+            <span key={group.id} />
           ))}
         </div>
       </div>
@@ -1481,29 +2074,55 @@ function RackDeviceFaceplate({
 
   if (ciscoTemplate) {
     const switchPorts = getCiscoSwitchPorts(device, ciscoTemplate.downlinkPorts);
-    const banks = groupCiscoPortsByBank(switchPorts.downlinks, ciscoTemplate.panelGroups[0]?.bankSize ?? 12);
+    const downlinkGroup = ciscoTemplate.panelGroups[0];
+    const uplinkGroup = ciscoTemplate.panelGroups[1];
+    const banks = groupCiscoPortsByBank(switchPorts.downlinks, downlinkGroup?.bankSize ?? 12);
     return (
-      <div className="rack-device-faceplate switch">
-        <div className="rack-device-u">U{position}{height > 1 ? `-${position + height - 1}` : ""}</div>
-        <div className="rack-device-label">
-          <strong>{device.name}</strong>
-          <small>{device.model || ciscoTemplate.sku}</small>
-        </div>
-        <div className="rack-mini-switch-face" aria-hidden="true">
-          <span className="rack-mini-led" />
-          {banks.slice(0, 4).map((bank) => (
-            <span className="rack-mini-bank" key={bank.id}>
-              {bank.ports.slice(0, 12).map((port) => (
-                <i className={selectedPortId === port.id ? "selected" : ""} key={port.id} />
-              ))}
-            </span>
-          ))}
+      <div className="rack-device-faceplate switch rack-embedded-switch" aria-label={`${device.name} front panel`}>
+        <div className="rack-embedded-cisco-panel" aria-label={`${device.name} front panel`}>
+          <div className="rack-embedded-controls" aria-hidden="true">
+            <span className="rack-mini-led" />
+            <span className="rack-embedded-mode">MODE</span>
+          </div>
+          <div className="rack-embedded-banks">
+            {banks.map((bank) => (
+              <div className="rack-embedded-bank" key={bank.id}>
+                <PortGrid
+                  ports={bank.ports}
+                  cables={cables}
+                  canEdit={canEdit}
+                  isPanMode={isPanMode}
+                  queuedPortIds={queuedPortIds}
+                  pendingEndpointId={pendingEndpointId}
+                  dragPortId={dragPortId}
+                  selectedPortId={selectedPortId}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onDropPort={onDropPort}
+                  onSelectPort={onSelectPort}
+                  className="rack-embedded-downlink-grid"
+                  columns={downlinkGroup?.columns ?? 6}
+                />
+              </div>
+            ))}
+          </div>
           {switchPorts.uplinks.length ? (
-            <span className="rack-mini-uplinks">
-              {switchPorts.uplinks.slice(0, 4).map((port) => (
-                <i className={selectedPortId === port.id ? "selected" : ""} key={port.id} />
-              ))}
-            </span>
+            <PortGrid
+              ports={switchPorts.uplinks}
+              cables={cables}
+              canEdit={canEdit}
+              isPanMode={isPanMode}
+              queuedPortIds={queuedPortIds}
+              pendingEndpointId={pendingEndpointId}
+              dragPortId={dragPortId}
+              selectedPortId={selectedPortId}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onDropPort={onDropPort}
+              onSelectPort={onSelectPort}
+              className="rack-embedded-uplink-grid"
+              columns={uplinkGroup?.columns ?? Math.min(4, switchPorts.uplinks.length || 1)}
+            />
           ) : null}
         </div>
       </div>
@@ -1511,11 +2130,11 @@ function RackDeviceFaceplate({
   }
 
   return (
-    <div className={`rack-device-faceplate ${category}`}>
-      <div className="rack-device-u">U{position}{height > 1 ? `-${position + height - 1}` : ""}</div>
-      <div className="rack-device-label">
-        <strong>{device.name}</strong>
-        <small>{device.model || device.vendor || device.type}</small>
+    <div className={`rack-device-faceplate ${category} rack-device-physical-face`} aria-label={`${device.name} front panel`}>
+      <div className="rack-physical-controls" aria-hidden="true">
+        <span className="rack-mini-led" />
+        <span className="rack-control-port" />
+        <span className="rack-control-slot" />
       </div>
       <div className="rack-generic-slots" aria-hidden="true">
         {Array.from({ length: Math.min(12, Math.max(2, device.ports.length || height * 2)) }, (_, index) => (
@@ -1871,6 +2490,15 @@ function buildSiteSummaries(sites: SitePoint[], racks: RackDto[], cables: CableD
   });
 }
 
+function getOfficeRackOverviewRacks(activeRack: RackDto | null, siteRacks: RackDto[]) {
+  if (!activeRack) return [];
+  const racks = siteRacks.length ? siteRacks : [activeRack];
+  if (racks.length <= officeRackOverviewLimit) return racks;
+  const activeIndex = Math.max(0, racks.findIndex((rack) => rack.id === activeRack.id));
+  const start = clamp(activeIndex - 1, 0, racks.length - officeRackOverviewLimit);
+  return racks.slice(start, start + officeRackOverviewLimit);
+}
+
 function rackMatchesSite(rack: RackDto, site: SitePoint) {
   const text = `${rack.room} ${rack.code} ${rack.name}`.toLowerCase();
   return site.aliases.some((alias) => text.includes(alias.toLowerCase()));
@@ -1890,9 +2518,24 @@ function groupSitesByCountry(sites: SiteSummary[]): CountrySiteGroup[] {
   return Array.from(groups.values())
     .map((group) => ({
       ...group,
-      sites: group.sites.sort((a, b) => a.city.localeCompare(b.city) || a.label.localeCompare(b.label))
+      sites: group.sites.sort((a, b) => {
+        const orderA = defaultSiteOrder.get(a.id) ?? Number.POSITIVE_INFINITY;
+        const orderB = defaultSiteOrder.get(b.id) ?? Number.POSITIVE_INFINITY;
+        return orderA - orderB || a.city.localeCompare(b.city) || a.label.localeCompare(b.label);
+      })
     }))
-    .sort((a, b) => a.country.localeCompare(b.country));
+    .sort((a, b) => {
+      const orderA = defaultCountryOrder.get(a.country) ?? Number.POSITIVE_INFINITY;
+      const orderB = defaultCountryOrder.get(b.country) ?? Number.POSITIVE_INFINITY;
+      return orderA - orderB || a.country.localeCompare(b.country);
+    });
+}
+
+function formatRackLineStats(racks: number, lines: number, t: Translate) {
+  return t("siteMap.rackLineStats", {
+    racks: t(racks === 1 ? "siteMap.rackCount.one" : "siteMap.rackCount.other", { count: racks }),
+    lines: t(lines === 1 ? "siteMap.lineCount.one" : "siteMap.lineCount.other", { count: lines })
+  });
 }
 
 function cableBelongsToSite(cable: CableDto, site?: SiteSummary) {
@@ -2089,12 +2732,14 @@ function Details({
   cable,
   port,
   device,
+  deviceTemplate,
   cables,
   directPeer,
   routeEnd,
   trace,
   canEdit,
   canReview,
+  canAdmin,
   busy,
   queuedPortIds,
   pendingEndpointId,
@@ -2105,18 +2750,21 @@ function Details({
   onDropPort,
   onSelectPort,
   onStatus,
+  onDeleteDevice,
   onPhoto,
   t
 }: {
   cable: CableDto | null;
   port: (PortDto & { device: DeviceDto }) | null;
   device: DeviceDto | null;
+  deviceTemplate: RackulaDeviceTemplate | null;
   cables: CableDto[];
   directPeer: (PortDto & { device: DeviceDto & { rack?: { code: string; room: string } | null } }) | null;
   routeEnd: (PortDto & { device: DeviceDto }) | null;
   trace: Array<PortDto & { device: DeviceDto }>;
   canEdit: boolean;
   canReview: boolean;
+  canAdmin: boolean;
   busy: boolean;
   queuedPortIds: Set<string>;
   pendingEndpointId: string | null;
@@ -2127,37 +2775,102 @@ function Details({
   onDropPort: (sourcePortId: string, targetPortId: string) => void;
   onSelectPort: (portId: string) => void;
   onStatus: (status: CableStatus) => void;
+  onDeleteDevice: () => void;
   onPhoto: (file: File) => void;
   t: Translate;
 }) {
-  if (!cable && !port && !device) {
+  if (!cable && !port && !device && !deviceTemplate) {
     return <div className="empty-state">{t("details.empty")}</div>;
   }
 
   return (
     <div className="details-stack">
+      {deviceTemplate ? (
+        <section className="device-detail-section compact-device-summary">
+          <div className="section-title">{t("details.deviceType")}</div>
+          <h2>{deviceTemplate.model}</h2>
+          <dl className="device-identity-grid">
+            <div>
+              <dt>{t("details.model")}</dt>
+              <dd>{deviceTemplate.model}</dd>
+            </div>
+            <div>
+              <dt>{t("details.type")}</dt>
+              <dd>{rackulaDeviceCategoryLabel(deviceTemplate.category, t)}</dd>
+            </div>
+            <div>
+              <dt>{t("deviceLibrary.height")}</dt>
+              <dd>{formatRackulaTemplateHeight(deviceTemplate)}</dd>
+            </div>
+            <div>
+              <dt>{t("deviceLibrary.depth")}</dt>
+              <dd>{deviceTemplate.fullDepth ? t("deviceLibrary.fullDepth") : t("deviceLibrary.halfDepth")}</dd>
+            </div>
+            <div>
+              <dt>{t("deviceLibrary.width")}</dt>
+              <dd>{deviceTemplate.slotWidth === 1 ? t("deviceLibrary.halfWidthLong") : t("deviceLibrary.fullWidth")}</dd>
+            </div>
+            <div>
+              <dt>{t("deviceLibrary.role")}</dt>
+              <dd>{formatRackulaTemplateRole(deviceTemplate, t)}</dd>
+            </div>
+            <div>
+              <dt>{t("deviceLibrary.traceType")}</dt>
+              <dd>{rackulaCategoryToTraceDeviceType(deviceTemplate.category)}</dd>
+            </div>
+            <div>
+              <dt>{t("deviceLibrary.slots")}</dt>
+              <dd>{deviceTemplate.slots?.length ? t("deviceLibrary.slotCount", { count: deviceTemplate.slots.length }) : "-"}</dd>
+            </div>
+          </dl>
+        </section>
+      ) : null}
+
       {device ? (
-        <section className="device-detail-section">
-          <div className="section-title">{t("details.deviceFront")}</div>
+        <section className="device-detail-section compact-device-summary">
+          <div className="section-title">{t("details.device")}</div>
           <h2>{device.name}</h2>
-          <p className="muted">{device.model || device.vendor || device.type} · U{device.uPosition ?? "-"} · {device.uHeight}U</p>
-          <div className="device-detail-scroll">
-            <DevicePanel
-              device={device}
-              cables={cables}
-              canEdit={canEdit}
-              isPanMode={false}
-              queuedPortIds={queuedPortIds}
-              pendingEndpointId={pendingEndpointId}
-              dragPortId={dragPortId}
-              selectedPortId={selectedPortId}
-              onDragStart={onDragStart}
-              onDragEnd={onDragEnd}
-              onDropPort={onDropPort}
-              onSelectPort={onSelectPort}
-              t={t}
-            />
-          </div>
+          <dl className="device-identity-grid">
+            <div>
+              <dt>{t("details.hostname")}</dt>
+              <dd>{device.name}</dd>
+            </div>
+            <div>
+              <dt>{t("details.model")}</dt>
+              <dd>{device.model || "-"}</dd>
+            </div>
+            <div>
+              <dt>{t("details.vendor")}</dt>
+              <dd>{device.vendor || "-"}</dd>
+            </div>
+            <div>
+              <dt>{t("details.type")}</dt>
+              <dd>{device.type}</dd>
+            </div>
+            <div>
+              <dt>{t("details.rackPosition")}</dt>
+              <dd>{formatDeviceRackPosition(device)}</dd>
+            </div>
+            <div>
+              <dt>{t("details.managementIp")}</dt>
+              <dd>{device.mgmtIp || "-"}</dd>
+            </div>
+          </dl>
+        </section>
+      ) : null}
+
+      {device ? (
+        <section className="device-detail-section device-actions-section">
+          <div className="section-title">{t("details.deviceActions")}</div>
+          <button
+            className="secondary-button danger-button"
+            disabled={!canAdmin || busy}
+            onClick={onDeleteDevice}
+            title={canAdmin ? t("action.deleteDevice") : t("api.error.permissionDenied")}
+          >
+            <Trash2 size={16} />
+            {t("action.deleteDevice")}
+          </button>
         </section>
       ) : null}
 
@@ -2250,24 +2963,26 @@ function Details({
         </section>
       ) : null}
 
-      <section>
-        <div className="section-title">{t("details.photos")}</div>
-        <label className="upload-button">
-          <Upload size={16} />
-          {t("action.upload")}
-          <input type="file" accept="image/*" onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) onPhoto(file);
-          }} />
-        </label>
-        <div className="photo-grid">
-          {cable?.photos.map((photo) => (
-            <a key={photo.id} href={`/api/photos/${photo.id}`} target="_blank">
-              <img src={`/api/photos/${photo.id}`} alt={photo.originalName} />
-            </a>
-          ))}
-        </div>
-      </section>
+      {cable || port || device ? (
+        <section>
+          <div className="section-title">{t("details.photos")}</div>
+          <label className="upload-button">
+            <Upload size={16} />
+            {t("action.upload")}
+            <input type="file" accept="image/*" onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) onPhoto(file);
+            }} />
+          </label>
+          <div className="photo-grid">
+            {cable?.photos.map((photo) => (
+              <a key={photo.id} href={`/api/photos/${photo.id}`} target="_blank">
+                <img src={`/api/photos/${photo.id}`} alt={photo.originalName} />
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -2315,6 +3030,16 @@ function DeviceConnectionSummary({
       )}
     </section>
   );
+}
+
+function formatDeviceRackPosition(device: DeviceDto) {
+  if (!device.uPosition) return "-";
+  const height = Math.max(1, device.uHeight || 1);
+  const endPosition = device.uPosition + height - 1;
+
+  return height > 1
+    ? `U${device.uPosition}-${endPosition} · ${height}U`
+    : `U${device.uPosition} · ${height}U`;
 }
 
 function NewCableForm({
@@ -2433,6 +3158,11 @@ function compactEndpointCode(port: PortDto & { device: DeviceDto & { rack?: { co
     .replace(/^-+|-+$/g, "")
     .slice(0, 24)
     .toUpperCase();
+}
+
+function formatCableListEndpoint(port: PortDto & { device: DeviceDto & { rack?: { code: string; room: string } | null } }) {
+  const rack = port.device.rack ? `${port.device.rack.room}/${port.device.rack.code}` : "FIELD";
+  return `${rack} · ${port.device.name} ${port.name}`;
 }
 
 function formatPortButtonLabel(portName: string) {
@@ -2559,6 +3289,37 @@ function formatSiteDisplay(site: Pick<SitePoint, "country" | "city" | "address" 
   const city = siteLabel(site, t);
   const country = countryLabel(site.country, t);
   return site.address ? `${country} / ${city} · ${site.address}` : `${country} / ${city}`;
+}
+
+const rackulaCategoryTranslationKeys: Record<RackulaDeviceCategory, TranslationKey> = {
+  server: "deviceLibrary.category.server",
+  network: "deviceLibrary.category.network",
+  firewall: "deviceLibrary.category.firewall",
+  "patch-panel": "deviceLibrary.category.patch-panel",
+  power: "deviceLibrary.category.power",
+  storage: "deviceLibrary.category.storage",
+  kvm: "deviceLibrary.category.kvm",
+  "av-media": "deviceLibrary.category.av-media",
+  cooling: "deviceLibrary.category.cooling",
+  shelf: "deviceLibrary.category.shelf",
+  blank: "deviceLibrary.category.blank",
+  "cable-management": "deviceLibrary.category.cable-management",
+  chassis: "deviceLibrary.category.chassis",
+  other: "deviceLibrary.category.other"
+};
+
+function rackulaDeviceCategoryLabel(category: RackulaDeviceCategory, t: Translate) {
+  return t(rackulaCategoryTranslationKeys[category]);
+}
+
+function formatRackulaTemplateHeight(template: RackulaDeviceTemplate) {
+  return `${template.heightU}U`;
+}
+
+function formatRackulaTemplateRole(template: RackulaDeviceTemplate, t: Translate) {
+  if (template.subdeviceRole === "parent") return t("deviceLibrary.roleParent");
+  if (template.subdeviceRole === "child") return t("deviceLibrary.roleChild");
+  return t("deviceLibrary.roleStandalone");
 }
 
 function statusLabel(status: CableStatus, t: Translate) {

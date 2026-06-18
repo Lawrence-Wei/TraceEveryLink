@@ -8,7 +8,7 @@
 
 ![TraceEveryLink workbench screenshot](docs/assets/traceeverylink-workbench.png)
 
-上图是 seeded demo 数据下的主工作台：左侧按国家、城市和机柜导航，中间查看站点拓扑和机柜正反面，右侧显示端口、线缆、链路追踪和审计记录。
+上图是 seeded demo 数据下的全局地图首页：左侧按国家、城市和机柜导航，中间先查看全球专线拓扑；进入具体 site 后，地图会隐藏，工作区切换为机柜正面视图，右侧显示端口、线缆和链路追踪。
 
 ## 最基本使用教程
 
@@ -23,7 +23,7 @@ npm run dev
 ```
 
 2. 打开 `http://localhost:3000`，使用 `.env` 里的管理员账号登录。默认开发账号是 `admin@example.com` / `ChangeMe123!`，开发环境默认关闭管理员 MFA。
-3. 进入工作台后，在左侧选择 `China -> Shanghai -> R01`。seed 数据会显示一组示例交换机、路由器、配线架、服务器和线缆。
+3. 进入工作台后先看到全局专线地图。点击地图或左侧导航里的 `China -> Shanghai` 进入 site，再选择 `MDF-01 / R01` 查看示例交换机、路由器、配线架、服务器和线缆。
 4. 在顶部搜索框输入线缆号、设备名或端口名，例如 `Gi1/0/4`、`Te1/1/1`、`C9300`，快速定位对象。
 5. 保持 `Select` 模式，点击机柜里的设备或端口。右侧 `Details` 面板会显示端口状态、对端位置、完整链路和相关审计。
 6. 要登记一根新线，切到 `Patch` 模式，依次点击 A 端和 B 端端口，确认它们进入 `Pending Patchlines` 后点击 `Complete`。

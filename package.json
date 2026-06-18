@@ -42,5 +42,21 @@
   "overrides": {
     "postcss": "8.5.10",
     "esbuild": "0.28.1"
-  }
+  },
+  "description": "接线镜（TraceEveryLink）是一个面向机房现场的 Cisco 设备接线可视化系统。它用于记录和查询交换机端口、配线架、墙口、AP、服务器之间的物理连接，让手机、Windows 和 Mac 用户都能通过网页直观看到“这根线从哪里来到哪里去”。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lawrence-Wei/TraceEveryLink.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lawrence-Wei/TraceEveryLink/issues"
+  },
+  "homepage": "https://github.com/Lawrence-Wei/TraceEveryLink#readme"
 }
