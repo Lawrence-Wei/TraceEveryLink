@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C3750X Management SSH VLAN 12 Troubleshooting Notes</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #586174;
+      --line: #d9e0ea;
+      --accent: #1367c8;
+      --accent-soft: #e8f2ff;
+      --code-bg: #101828;
+      --code-ink: #ecf3ff;
+      --warn-bg: #fff8e6;
+      --warn-line: #f0cf78;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto;
+      padding: 40px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 48px rgba(23, 32, 51, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 38px 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 26px 0 10px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: #0b4d98;
+      font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+      font-size: 0.94em;
+    }
+
+    pre {
+      overflow: auto;
+      margin: 14px 0;
+      padding: 16px;
+      border-radius: 8px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.48;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 15px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf3fa;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--warn-line);
+      background: var(--warn-bg);
+      color: #5d4816;
+    }
+
+    .summary {
+      margin: 20px 0;
+      padding: 16px;
+      border: 1px solid #b7d5f5;
+      border-radius: 8px;
+      background: var(--accent-soft);
+    }
+
+    .toc {
+      margin: 24px 0 12px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .toc ol {
+      columns: 2;
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: calc(100% - 18px);
+        margin: 9px auto;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .toc ol {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>C3750X Management SSH VLAN 12 Troubleshooting Notes</h1>
+  <p>本文记录这次把 <code>PIR-LAB-CORE3750-77.2</code> / C3750X 交换机做成可 SSH 管理设备的完整排错过程。</p>
+
+  <div class="summary">
+    <table>
+      <tr><th>项目</th><th>值</th></tr>
+      <tr><td>管理 IP</td><td><code>192.168.77.2/24</code></td></tr>
+      <tr><td>默认网关</td><td><code>192.168.77.1</code></td></tr>
+      <tr><td>SSH 用户</td><td><code>lawrence</code></td></tr>
+      <tr><td>管理入口</td><td><code>ssh lawrence@192.168.77.2</code></td></tr>
+      <tr><td>实际承载 VLAN</td><td><code>VLAN 12</code> / <code>interface Vlan12</code></td></tr>
+    </table>
+  </div>
+
+  <blockquote>说明：本文只适用于已授权的办公室实验设备和退役实验交换机。不要把测试 VLAN 用作绕过公司网络安全或审计控制的方式。</blockquote>
+
+  <nav class="toc">
+    <strong>目录</strong>
+    <ol>
+      <li><a href="#symptom">现场现象</a></li>
+      <li><a href="#ubuntu-console">从 Ubuntu 找 Console 线</a></li>
+      <li><a href="#serial">通过串口进入交换机</a></li>
+      <li><a href="#baseline">先看当前基础状态</a></li>
+      <li><a href="#ssh-base">查 SSH 基础配置</a></li>
+      <li><a href="#gateway-vlan">查 192.168.77.1 到底在哪个 VLAN</a></li>
+      <li><a href="#why-vlan12">为什么 VLAN 1 不行，VLAN 12 才行</a></li>
+      <li><a href="#fix">正式修复配置</a></li>
+      <li><a href="#final-config">修复后的关键配置</a></li>
+      <li><a href="#verify-switch">交换机上验证</a></li>
+      <li><a href="#verify-ubuntu">Ubuntu 验证</a></li>
+      <li><a href="#verify-windows">Windows 验证</a></li>
+      <li><a href="#legacy-ssh">旧 IOS SSH 算法问题</a></li>
+      <li><a href="#ssh-alias">建议添加 SSH Alias</a></li>
+      <li><a href="#commands">命令清单</a></li>
+      <li><a href="#conclusion">最终结论</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="symptom">1. 现场现象</h2>
+  <p>最初目标是让 C3750X 使用 <code>192.168.77.2/24</code> 作为管理 IP，并通过 <code>192.168.77.1</code> 作为默认网关。</p>
+  <pre><code>Switch management IP: 192.168.77.2/24
+Gateway:              192.168.77.1
+Expected SSH:         ssh lawrence@192.168.77.2</code></pre>
+  <p>但实际情况是 Console 可以进，网络侧无法稳定 SSH。交换机原先把 <code>192.168.77.2</code> 放在 <code>interface Vlan1</code>，而上游 iStoreOS 的 <code>192.168.77.1</code> 实际从 VLAN 12 的上联方向学习到。</p>
+
+  <h2 id="ubuntu-console">2. 从 Ubuntu 找 Console 线</h2>
+  <pre><code>ssh lawrence@192.168.77.199</code></pre>
+  <pre><code>ls -l /dev/ttyUSB* /dev/ttyACM* 2&gt;/dev/null
+ls -l /dev/serial/by-id/
+fuser -v /dev/ttyUSB0
+fuser -v /dev/ttyACM0</code></pre>
+  <p>当时识别到 <code>/dev/ttyUSB0</code> 是 FTDI FT231X USB UART，<code>/dev/ttyACM0</code> 是 Cisco USB Console。若旧的 <code>picocom</code> 占用端口，需要先退出或确认后结束进程。</p>
+  <pre><code>kill 28690</code></pre>
+
+  <h2 id="serial">3. 通过串口进入交换机</h2>
+  <pre><code>picocom -b 9600 /dev/ttyUSB0</code></pre>
+  <p>如果进入后没有输出，按几次回车即可唤醒 Cisco Console。退出 <code>picocom</code> 是 <code>Ctrl-a</code> 后再按 <code>Ctrl-x</code>。</p>
+  <pre><code>terminal length 0</code></pre>
+
+  <h2 id="baseline">4. 先看当前基础状态</h2>
+  <pre><code>show ip interface brief
+show vlan brief
+show run interface Vlan1
+show run interface Vlan12
+show ip route</code></pre>
+  <p>当时关键状态类似：</p>
+  <pre><code>interface Vlan1
+ ip address 192.168.77.2 255.255.255.0
+
+interface Vlan12
+ description LAN-LOC-INTWIFI192.168.10.0/24
+ ip address 192.168.10.7 255.255.254.0
+
+ip route 0.0.0.0 0.0.0.0 192.168.10.1</code></pre>
+
+  <h2 id="ssh-base">5. 查 SSH 基础配置</h2>
+  <pre><code>show ip ssh
+show run | include ip ssh|ip domain-name|username|enable secret
+show run | section line vty</code></pre>
+  <pre><code>ip domain-name office.lab
+ip ssh version 2
+username lawrence privilege 15 secret &lt;hidden&gt;
+
+line vty 0 15
+ login local
+ transport input ssh</code></pre>
+  <p>这说明 SSH 服务、VTY 登录方式和本地用户方向都基本正确，问题不是“没开 SSH”。</p>
+
+  <h2 id="gateway-vlan">6. 查 <code>192.168.77.1</code> 到底在哪个 VLAN</h2>
+  <pre><code>show arp | include 192.168.77.1
+show mac address-table | include da22.2a64.8d89</code></pre>
+  <pre><code>192.168.77.1  -&gt; MAC da22.2a64.8d89
+da22.2a64.8d89 learned on VLAN 12 via Gi1/1/1</code></pre>
+  <p>这是关键发现：<code>192.168.77.1</code> 是从 VLAN 12 学到的，不是从 VLAN 1 学到的。</p>
+
+  <h2 id="why-vlan12">7. 为什么 VLAN 1 不行，VLAN 12 才行</h2>
+  <p>Cisco 三层交换机上的 <code>interface VlanX</code> 是 SVI，它代表某个 VLAN 的三层接口。把 <code>192.168.77.2/24</code> 放在 <code>interface Vlan1</code> 时，交换机会认为 <code>192.168.77.0/24</code> 在 VLAN 1 里面。</p>
+  <pre><code>Who has 192.168.77.1? Tell 192.168.77.2</code></pre>
+  <p>这个 ARP 会在 VLAN 1 里发。但现场里 <code>192.168.77.1</code> 的 iStoreOS 实际在 VLAN 12，所以两边即使 IP 看起来同属 <code>/24</code>，也不是同一个二层广播域。</p>
+  <table>
+    <tr><th>项目</th><th>当时状态</th></tr>
+    <tr><td><code>interface Vlan1</code></td><td><code>192.168.77.2/24</code></td></tr>
+    <tr><td><code>192.168.77.1</code> 实际位置</td><td>VLAN 12</td></tr>
+    <tr><td>结果</td><td>同 IP 网段，不同二层 VLAN，ARP 不通</td></tr>
+  </table>
+  <p>所以不是 VLAN 1 永远不能做管理，而是管理 SVI 必须放在能二层到达网关 <code>192.168.77.1</code> 的 VLAN 上。你的现场里这个 VLAN 是 VLAN 12。</p>
+
+  <h2 id="fix">8. 正式修复配置</h2>
+  <pre><code>conf t
+
+interface Vlan1
+ no ip address
+ no shutdown
+exit
+
+interface Vlan12
+ description LAN-LOC-INTWIFI / PIR-LAB-MGMT
+ ip address 192.168.10.7 255.255.254.0
+ ip address 192.168.77.2 255.255.255.0 secondary
+ no shutdown
+exit
+
+no ip route 0.0.0.0 0.0.0.0 192.168.10.1
+ip route 0.0.0.0 0.0.0.0 192.168.77.1
+ip default-gateway 192.168.77.1
+
+ip domain-name office.lab
+ip ssh version 2
+
+line vty 0 15
+ login local
+ transport input ssh
+exit
+
+end
+write memory</code></pre>
+  <p>由于 <code>interface Vlan12</code> 原来已经有 <code>192.168.10.7/23</code>，所以 <code>192.168.77.2/24</code> 使用 secondary 地址。</p>
+
+  <h2 id="final-config">9. 修复后的关键配置</h2>
+  <pre><code>interface Vlan1
+ no ip address
+
+interface Vlan12
+ description LAN-LOC-INTWIFI / PIR-LAB-MGMT
+ ip address 192.168.10.7 255.255.254.0
+ ip address 192.168.77.2 255.255.255.0 secondary
+
+ip routing
+ip route 0.0.0.0 0.0.0.0 192.168.77.1
+ip default-gateway 192.168.77.1
+
+ip domain-name office.lab
+ip ssh version 2
+username lawrence privilege 15 secret &lt;hidden&gt;
+
+line vty 0 15
+ login local
+ transport input ssh</code></pre>
+
+  <h2 id="verify-switch">10. 交换机上验证</h2>
+  <pre><code>show run interface Vlan1
+show run interface Vlan12
+show ip interface brief
+show ip route
+show arp | include 192.168.77
+ping 192.168.77.1 source Vlan12 repeat 5</code></pre>
+  <p>本次从交换机 ping iStoreOS 网关结果为：</p>
+  <pre><code>!!!!!
+Success rate is 100 percent (5/5)</code></pre>
+
+  <h2 id="verify-ubuntu">11. Ubuntu 验证</h2>
+  <pre><code>ping -c 4 192.168.77.2
+nc -vz 192.168.77.2 22
+timeout 5 bash -c '&lt;/dev/tcp/192.168.77.2/22' &amp;&amp; echo open || echo closed</code></pre>
+  <p>本次结果：Ubuntu 到 <code>192.168.77.2</code> ping 成功，TCP/22 成功。</p>
+
+  <h2 id="verify-windows">12. Windows 验证</h2>
+  <pre><code>Test-Connection 192.168.77.2
+Test-NetConnection 192.168.77.2 -Port 22</code></pre>
+  <p>期望并已验证：</p>
+  <pre><code>TcpTestSucceeded : True</code></pre>
+
+  <h2 id="legacy-ssh">13. 旧 IOS SSH 算法问题</h2>
+  <p>网络通和 SSH 客户端能成功登录是两件事。老 IOS 可能只提供旧 KEX 和 CBC cipher，现代 OpenSSH 默认会拒绝。</p>
+  <pre><code>Unable to negotiate with 192.168.77.2 port 22:
+no matching key exchange method found.
+Their offer: diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1</code></pre>
+  <p>推荐连接命令：</p>
+  <pre><code>ssh \
+  -oKexAlgorithms=+diffie-hellman-group14-sha1 \
+  -oHostKeyAlgorithms=+ssh-rsa \
+  -oPubkeyAcceptedAlgorithms=+ssh-rsa \
+  -oCiphers=+aes128-cbc \
+  lawrence@192.168.77.2</code></pre>
+  <p>如果还提示 MAC 不匹配，再加：</p>
+  <pre><code>-oMACs=+hmac-sha1</code></pre>
+
+  <h2 id="ssh-alias">14. 建议添加 SSH Alias</h2>
+  <pre><code>Host pir-core3750 c3750x pir-lab-core77.2
+  HostName 192.168.77.2
+  User lawrence
+  KexAlgorithms +diffie-hellman-group14-sha1
+  HostKeyAlgorithms +ssh-rsa
+  PubkeyAcceptedAlgorithms +ssh-rsa
+  Ciphers +aes128-cbc
+  MACs +hmac-sha1</code></pre>
+  <pre><code>ssh pir-core3750</code></pre>
+
+  <h2 id="commands">15. 命令清单</h2>
+  <h3>Windows / PowerShell</h3>
+  <pre><code>ssh lawrence@192.168.77.199
+Test-Connection 192.168.77.2
+Test-NetConnection 192.168.77.2 -Port 22
+ssh -oKexAlgorithms=+diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa -oCiphers=+aes128-cbc lawrence@192.168.77.2</code></pre>
+
+  <h3>Ubuntu</h3>
+  <pre><code>hostname
+ip -4 -brief addr
+ls -l /dev/ttyUSB* /dev/ttyACM* 2&gt;/dev/null
+ls -l /dev/serial/by-id/
+fuser -v /dev/ttyUSB0
+fuser -v /dev/ttyACM0
+kill 28690
+picocom -b 9600 /dev/ttyUSB0
+ping -c 4 192.168.77.2
+nc -vz 192.168.77.2 22
+timeout 5 bash -c '&lt;/dev/tcp/192.168.77.2/22' &amp;&amp; echo open || echo closed</code></pre>
+
+  <h3>Cisco show / debug 类命令</h3>
+  <pre><code>terminal length 0
+show ip interface brief
+show vlan brief
+show interfaces trunk
+show cdp neighbors
+show cdp neighbors detail
+show vtp status
+show run interface Vlan1
+show run interface Vlan12
+show run | include ip ssh|ip domain-name|username|enable secret
+show run | section line vty
+show ip ssh
+show ip route
+show arp | include 192.168.77
+show arp | include 192.168.77.1
+show mac address-table | include da22.2a64.8d89
+ping 192.168.77.1 source Vlan12 repeat 5</code></pre>
+
+  <h3>Cisco 修改配置命令</h3>
+  <pre><code>conf t
+
+interface Vlan1
+ no ip address
+ no shutdown
+exit
+
+interface Vlan12
+ description LAN-LOC-INTWIFI / PIR-LAB-MGMT
+ ip address 192.168.10.7 255.255.254.0
+ ip address 192.168.77.2 255.255.255.0 secondary
+ no shutdown
+exit
+
+no ip route 0.0.0.0 0.0.0.0 192.168.10.1
+ip route 0.0.0.0 0.0.0.0 192.168.77.1
+ip default-gateway 192.168.77.1
+
+ip domain-name office.lab
+ip ssh version 2
+
+line vty 0 15
+ login local
+ transport input ssh
+exit
+
+end
+write memory</code></pre>
+
+  <h3>Native VLAN mismatch 相关命令</h3>
+  <pre><code>conf t
+interface GigabitEthernet1/1/1
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 1
+end
+wr
+
+show interfaces trunk</code></pre>
+
+  <h2 id="conclusion">16. 最终结论</h2>
+  <pre><code>错误状态：
+192.168.77.2/24 在 interface Vlan1
+192.168.77.1 实际在 VLAN 12
+结果：ARP 不在同一个广播域，管理不通
+
+修复状态：
+192.168.77.2/24 secondary 放到 interface Vlan12
+默认路由指向 192.168.77.1
+交换机能 ping 通 192.168.77.1
+Ubuntu / Windows 都能访问 192.168.77.2:22</code></pre>
+  <p>一句话总结：IP 地址看起来同网段还不够，管理 SVI 必须放在网关实际所在的 VLAN 里。</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C3750X IOS Upgrade From Ubuntu TFTP</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #5b6475;
+      --line: #d8e0eb;
+      --head: #edf4fb;
+      --accent: #0f63bd;
+      --accent-soft: #e8f2ff;
+      --code-bg: #101828;
+      --code-ink: #eef5ff;
+      --warn-bg: #fff8e5;
+      --warn-border: #e5bd4f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto;
+      padding: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 18px 44px rgba(23, 32, 51, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 34px 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: #0b4d98;
+      font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+      font-size: 0.94em;
+    }
+
+    pre {
+      overflow: auto;
+      margin: 14px 0;
+      padding: 16px;
+      border-radius: 8px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.48;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    table {
+      width: 100%;
+      margin: 16px 0;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--head);
+    }
+
+    blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--warn-border);
+      background: var(--warn-bg);
+      color: #5d4816;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    .summary {
+      margin: 20px 0;
+      padding: 16px;
+      border: 1px solid #b6d2f0;
+      border-radius: 8px;
+      background: var(--accent-soft);
+    }
+
+    .toc {
+      margin: 24px 0 12px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .toc ol {
+      columns: 2;
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: calc(100% - 18px);
+        margin: 9px auto;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .toc ol {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>C3750X IOS Upgrade From Ubuntu TFTP</h1>
+  <p>本文记录如何从 Ubuntu 上的 TFTP 服务，把 Cisco Catalyst 3750X 的 IOS 镜像拷贝到交换机 <code>flash:</code>，校验 MD5，并设置下次从新 IOS 启动。</p>
+
+  <div class="summary">
+    <table>
+      <tr><th>项目</th><th>值</th></tr>
+      <tr><td>交换机</td><td><code>PIR-LAB-CORE3750-77.2</code></td></tr>
+      <tr><td>管理 IP</td><td><code>192.168.77.2</code></td></tr>
+      <tr><td>型号</td><td><code>WS-C3750X-48P-S</code></td></tr>
+      <tr><td>Ubuntu TFTP 服务器</td><td><code>192.168.77.199</code></td></tr>
+      <tr><td>Ubuntu 镜像目录</td><td><code>/home/lawrence/C3750E</code></td></tr>
+      <tr><td>Ubuntu TFTP 根目录</td><td><code>/var/lib/tftpboot</code></td></tr>
+      <tr><td>新 IOS 文件</td><td><code>c3750e-universalk9-mz.152-4.E10.bin</code></td></tr>
+      <tr><td>新 IOS 大小</td><td><code>25,549,824 bytes</code></td></tr>
+      <tr><td>新 IOS MD5</td><td><code>6f3b3ddec62c77747c214cc7be555ec4</code></td></tr>
+      <tr><td>旧 IOS 备份</td><td><code>/home/lawrence/C3750E/c3750e-ipbasek9-mz.150-2.SE12.bin</code></td></tr>
+    </table>
+  </div>
+
+  <blockquote>只在已授权的实验交换机上执行。升级 IOS 会导致交换机重启，所有接在这台交换机上的链路会短暂中断。</blockquote>
+
+  <nav class="toc">
+    <strong>目录</strong>
+    <ol>
+      <li><a href="#precheck">升级前确认</a></li>
+      <li><a href="#ubuntu-files">确认 Ubuntu 镜像完整</a></li>
+      <li><a href="#tftp">准备 Ubuntu TFTP 文件</a></li>
+      <li><a href="#connectivity">测试连通性</a></li>
+      <li><a href="#copy">拷贝 IOS 到 Flash</a></li>
+      <li><a href="#dir">确认文件</a></li>
+      <li><a href="#md5">校验 MD5</a></li>
+      <li><a href="#boot">设置 Boot</a></li>
+      <li><a href="#reload">重启</a></li>
+      <li><a href="#verify">重启后验证</a></li>
+      <li><a href="#rollback">回退方法</a></li>
+      <li><a href="#quick">命令速查</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="precheck">1. 升级前确认</h2>
+  <pre><code>terminal length 0
+show version
+show inventory
+show boot
+dir flash:
+show file systems</code></pre>
+  <p>应确认型号是 <code>WS-C3750X-48P-S</code>，当前 boot 是 <code>flash:c3750e-ipbasek9-mz.150-2.SE12.bin</code>，Flash 剩余空间大于 <code>25,549,824 bytes</code>。</p>
+  <p>如果空间不足，确认旧镜像已经备份后，删除未使用的旧目录：</p>
+  <pre><code>delete /recursive /force flash:/c3750e-universalk9-mz.122-55.SE10
+dir flash:</code></pre>
+
+  <h2 id="ubuntu-files">2. 确认 Ubuntu 上镜像完整</h2>
+  <pre><code>ls -lh /home/lawrence/C3750E
+md5sum /home/lawrence/C3750E/c3750e-ipbasek9-mz.150-2.SE12.bin
+md5sum /home/lawrence/C3750E/c3750e-universalk9-mz.152-4.E10.bin</code></pre>
+  <pre><code>305610556c397ec705b26f7972da1771  c3750e-ipbasek9-mz.150-2.SE12.bin
+6f3b3ddec62c77747c214cc7be555ec4  c3750e-universalk9-mz.152-4.E10.bin</code></pre>
+
+  <h2 id="tftp">3. 准备 Ubuntu TFTP 文件</h2>
+  <pre><code>systemctl status tftpd-hpa --no-pager
+ss -lunp | grep ':69 '</code></pre>
+  <pre><code>sudo install -m 0644 -o tftp -g tftp \
+  /home/lawrence/C3750E/c3750e-universalk9-mz.152-4.E10.bin \
+  /var/lib/tftpboot/c3750e-universalk9-mz.152-4.E10.bin</code></pre>
+  <pre><code>ls -lh /var/lib/tftpboot/c3750e-universalk9-mz.152-4.E10.bin
+md5sum /var/lib/tftpboot/c3750e-universalk9-mz.152-4.E10.bin</code></pre>
+
+  <h2 id="connectivity">4. 测试交换机到 Ubuntu 连通性</h2>
+  <pre><code>ping 192.168.77.199 source Vlan12</code></pre>
+  <p>成功时应看到 <code>!!!!!</code> 或较高成功率。如果失败，先不要升级。</p>
+
+  <h2 id="copy">5. 从 TFTP 拷贝 IOS 到交换机 Flash</h2>
+  <pre><code>copy tftp: flash:</code></pre>
+  <p>按提示填写：</p>
+  <pre><code>Address or name of remote host []? 192.168.77.199
+Source filename []? c3750e-universalk9-mz.152-4.E10.bin
+Destination filename [c3750e-universalk9-mz.152-4.E10.bin]? </code></pre>
+  <p>最后一个问题直接按回车。Cisco IOS 的 <code>copy tftp:</code> 默认不显示百分比，只显示感叹号。</p>
+  <table>
+    <tr><th>符号</th><th>含义</th></tr>
+    <tr><td><code>!</code></td><td>成功传输一个数据块</td></tr>
+    <tr><td><code>.</code></td><td>某个数据块超时或重传</td></tr>
+    <tr><td><code>O</code></td><td>收到乱序包</td></tr>
+  </table>
+  <p>传输完成后应看到：</p>
+  <pre><code>25549824 bytes copied in xxx.xxx secs</code></pre>
+
+  <h2 id="dir">6. 确认文件已经写入 Flash</h2>
+  <pre><code>dir flash:</code></pre>
+  <p>应看到 <code>c3750e-universalk9-mz.152-4.E10.bin</code>，文件大小应为 <code>25549824</code>。</p>
+
+  <h2 id="md5">7. 校验 MD5</h2>
+  <pre><code>verify /md5 flash:c3750e-universalk9-mz.152-4.E10.bin 6f3b3ddec62c77747c214cc7be555ec4</code></pre>
+  <p>只有 MD5 通过后，才继续设置 boot。如果提示文件不存在，说明新 IOS 还没有成功写入 <code>flash:</code>。</p>
+
+  <h2 id="boot">8. 设置下次从新 IOS 启动</h2>
+  <pre><code>conf t
+no boot system
+boot system flash:c3750e-universalk9-mz.152-4.E10.bin
+end
+wr
+show boot</code></pre>
+  <p>期望看到：</p>
+  <pre><code>BOOT path-list      : flash:c3750e-universalk9-mz.152-4.E10.bin</code></pre>
+
+  <h2 id="reload">9. 重启交换机</h2>
+  <pre><code>reload</code></pre>
+  <p>如果提示保存配置，输入 <code>yes</code>。如果提示确认重启，直接按回车。</p>
+
+  <h2 id="verify">10. 重启后验证</h2>
+  <pre><code>show version
+show boot
+dir flash:
+show ip interface brief
+ping 192.168.77.1 source Vlan12
+show ip ssh</code></pre>
+  <p>确认看到：</p>
+  <pre><code>Cisco IOS Software ... Version 15.2(4)E10
+System image file is "flash:c3750e-universalk9-mz.152-4.E10.bin"</code></pre>
+
+  <h2 id="rollback">11. 回退方法</h2>
+  <pre><code>conf t
+no boot system
+boot system flash:c3750e-ipbasek9-mz.150-2.SE12.bin
+end
+wr
+reload</code></pre>
+  <p>如果只能进 boot loader：</p>
+  <pre><code>flash_init
+dir flash:
+boot flash:c3750e-ipbasek9-mz.150-2.SE12.bin</code></pre>
+
+  <h2 id="quick">12. 命令速查</h2>
+  <p>Ubuntu：</p>
+  <pre><code>sudo install -m 0644 -o tftp -g tftp \
+  /home/lawrence/C3750E/c3750e-universalk9-mz.152-4.E10.bin \
+  /var/lib/tftpboot/c3750e-universalk9-mz.152-4.E10.bin
+
+systemctl status tftpd-hpa --no-pager
+ss -lunp | grep ':69 '
+md5sum /var/lib/tftpboot/c3750e-universalk9-mz.152-4.E10.bin</code></pre>
+  <p>Cisco：</p>
+  <pre><code>terminal length 0
+show boot
+dir flash:
+show file systems
+ping 192.168.77.199 source Vlan12
+
+copy tftp: flash:
+
+dir flash:
+verify /md5 flash:c3750e-universalk9-mz.152-4.E10.bin 6f3b3ddec62c77747c214cc7be555ec4
+
+conf t
+no boot system
+boot system flash:c3750e-universalk9-mz.152-4.E10.bin
+end
+wr
+show boot
+reload</code></pre>
+
+  <h2>13. 结论</h2>
+  <p>安全顺序是：确认旧 IOS 已备份到 Ubuntu，确认新 IOS MD5 正确，删除未使用旧目录释放空间，从 Ubuntu TFTP 拷贝新 IOS 到 <code>flash:</code>，校验 Flash 中新 IOS 的 MD5，设置 boot，保存配置，重启并用 <code>show version</code> 验证。</p>
+  <p>不要跳过 MD5 校验。<code>dir flash:</code> 看到文件只代表传完了，不代表文件一定完整。</p>
+</main>
+</body>
+</html>

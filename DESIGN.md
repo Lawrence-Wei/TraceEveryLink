@@ -169,10 +169,11 @@ Center pane:
 - Keep toolbar sticky inside the canvas.
 - Global WAN topology belongs to the overview/home view. Selecting a concrete site such as Shanghai, Jiaozuo, or Bangkok should enter a site-focused workspace where the map is hidden and the rack/empty-site state becomes the primary surface.
 - The overview/home map should read as a global entry point, not as a selected-site detail card. Avoid carrying active site highlights, rack selection states, or site-specific footer copy into the home view.
-- Provide a clear home/global-map affordance in the top-left app chrome so users can return from a site workspace to the global map.
+- Provide explicit global-map affordances in both the left navigator and the site/rack toolbar so users can return from a site workspace to the world map without guessing that the product mark is clickable.
 - Site topology card and rack overview should not stack on the same site-focused page. The rack is the primary hardware operation surface after a site is selected.
 - The rack overview should present one front-facing rack view, not side-by-side front and rear rack faces.
 - Rack overview scale should feel like an office or small MDF room overview: one rack should be compact, and two or three racks from the same site should be able to appear side by side without making a single 42U rack dominate the page.
+- Rack-mounted devices must read like physical equipment installed in a real rack, not flat inventory blocks. Include rack rails, mounting ears, screw heads, device depth/shadow, ventilation, drive bays, module slots, patch fields, and real clickable port grids where available.
 - Cisco switch and router faceplates should render directly inside their real U positions whenever possible. The in-rack faceplate must keep real port buttons and official-like port order.
 - In-rack device faces should look like the installed hardware, not inventory cards. Do not print hostname, model, SKU, or vendor text on the rack-mounted faceplate; show that identity in the inspector after the user selects the device.
 - Do not duplicate the same selected hardware front panel below the rack and again in the right inspector. If a device is selected, the right inspector should summarize identity, connections, port/cable context, photos, and actions.

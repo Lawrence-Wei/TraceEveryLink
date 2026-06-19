@@ -7,11 +7,13 @@ import {
   Check,
   Download,
   FileText,
+  Globe2,
   Hand,
   Home,
   LogOut,
   Maximize2,
   Minimize2,
+  Minus,
   Moon,
   MousePointer2,
   Plus,
@@ -26,6 +28,7 @@ import {
   X
 } from "lucide-react";
 import {
+  type CiscoDeviceTemplate,
   formatCiscoPortShortName,
   getCiscoDeviceTemplate,
   getCiscoPortNumber,
@@ -928,6 +931,7 @@ export default function DashboardClient({
 
       <section className={[
         "workspace",
+        `workbench-${workbenchMode}`,
         `sidebar-${sidebarSize}`,
         sidebarOpen ? "" : "sidebar-collapsed",
         detailsOpen ? "" : "details-collapsed"
@@ -970,6 +974,17 @@ export default function DashboardClient({
             </div>
           </div>
           <div className="site-manager">
+            <button
+              className={workbenchMode === "overview" ? "global-map-entry active" : "global-map-entry"}
+              onClick={showGlobalOverview}
+              type="button"
+            >
+              <Globe2 size={16} />
+              <span>
+                <strong>{t("action.globalMapShort")}</strong>
+                <small>{t("siteMap.globalMapHome")}</small>
+              </span>
+            </button>
             <button className="secondary-button add-site-button" onClick={() => setShowNewSiteForm((value) => !value)}>
               {showNewSiteForm ? <X size={15} /> : <Plus size={15} />}
               {showNewSiteForm ? t("siteManager.cancel") : t("siteManager.add")}
@@ -1146,18 +1161,24 @@ export default function DashboardClient({
           ref={rackStageRef}
           className={[
             "rack-stage",
+            workbenchMode === "overview" ? "overview-stage" : "site-stage",
             viewMode === "pan" ? "pan-mode" : "",
             isPanning ? "panning" : ""
           ].join(" ")}
-          onPointerDown={handleRackPointerDown}
-          onPointerMove={handleRackPointerMove}
-          onPointerUp={handleRackPointerUp}
-          onPointerCancel={handleRackPointerUp}
-          onClickCapture={handleRackClickCapture}
-          onWheel={handleRackWheel}
+          onPointerDown={workbenchMode === "site" ? handleRackPointerDown : undefined}
+          onPointerMove={workbenchMode === "site" ? handleRackPointerMove : undefined}
+          onPointerUp={workbenchMode === "site" ? handleRackPointerUp : undefined}
+          onPointerCancel={workbenchMode === "site" ? handleRackPointerUp : undefined}
+          onClickCapture={workbenchMode === "site" ? handleRackClickCapture : undefined}
+          onWheel={workbenchMode === "site" ? handleRackWheel : undefined}
         >
           {workbenchMode === "site" && activeRack ? (
             <div className="rack-view-toolbar">
+              <button className="toolbar-global-map-button" onClick={showGlobalOverview} title={t("action.globalMap")} type="button">
+                <Globe2 size={16} />
+                {t("action.globalMapShort")}
+              </button>
+              <span className="toolbar-divider" aria-hidden="true" />
               <button
                 className={viewMode === "select" ? "active" : ""}
                 onClick={() => setViewMode("select")}
@@ -1205,51 +1226,53 @@ export default function DashboardClient({
               ) : null}
             </div>
           ) : null}
-          <div
-            className="rack-pan-content"
-            style={{
-              transform: `translate3d(${canvasOffset.x}px, ${canvasOffset.y}px, 0)`
-            }}
-          >
-            {workbenchMode === "overview" ? (
-              <SiteMapNavigator
-                sites={siteSummaries}
-                activeSiteId={activeSite?.id || ""}
-                activeRack={null}
-                onSelectSite={selectSite}
-                t={t}
-              />
-            ) : activeRack ? (
-              <RackView
-                rack={activeRack}
-                racks={officeRackOverviewRacks}
-                cables={data.cables}
-                canEdit={canEdit}
-                isPanMode={viewMode === "pan"}
-                queuedPortIds={queuedPortIds}
-                pendingEndpointId={pendingEndpointId}
-                dragPortId={dragPortId}
-                selectedDeviceId={selectedDevice?.id || null}
-                selectedPortId={selectedPortId}
-                onDragStart={(portId) => setDragPortId(portId)}
-                onDragEnd={() => setDragPortId(null)}
-                onDropPort={(sourcePortId, targetPortId) => {
-                  setDragPortId(null);
-                  addPendingConnection(sourcePortId, targetPortId);
-                }}
-                onSelectDevice={selectDeviceForDetails}
-                onSelectRack={selectRack}
-                onSelectPort={handlePortSelection}
-                t={t}
-              />
-            ) : null}
-            {workbenchMode === "site" && !activeRack ? (
-              <div className="site-empty-state">
-                <strong>{t("siteMap.noRackData", { site: activeSite ? siteLabel(activeSite, t) : t("siteMap.site") })}</strong>
-                <span>{t("siteMap.noRackHelp")}</span>
-              </div>
-            ) : null}
-          </div>
+          {workbenchMode === "overview" ? (
+            <SiteMapNavigator
+              sites={siteSummaries}
+              activeSiteId=""
+              activeRack={null}
+              onSelectSite={selectSite}
+              t={t}
+            />
+          ) : (
+            <div
+              className="rack-pan-content"
+              style={{
+                transform: `translate3d(${canvasOffset.x}px, ${canvasOffset.y}px, 0)`
+              }}
+            >
+              {activeRack ? (
+                <RackView
+                  rack={activeRack}
+                  racks={officeRackOverviewRacks}
+                  cables={data.cables}
+                  canEdit={canEdit}
+                  isPanMode={viewMode === "pan"}
+                  queuedPortIds={queuedPortIds}
+                  pendingEndpointId={pendingEndpointId}
+                  dragPortId={dragPortId}
+                  selectedDeviceId={selectedDevice?.id || null}
+                  selectedPortId={selectedPortId}
+                  onDragStart={(portId) => setDragPortId(portId)}
+                  onDragEnd={() => setDragPortId(null)}
+                  onDropPort={(sourcePortId, targetPortId) => {
+                    setDragPortId(null);
+                    addPendingConnection(sourcePortId, targetPortId);
+                  }}
+                  onSelectDevice={selectDeviceForDetails}
+                  onSelectRack={selectRack}
+                  onSelectPort={handlePortSelection}
+                  t={t}
+                />
+              ) : null}
+              {!activeRack ? (
+                <div className="site-empty-state">
+                  <strong>{t("siteMap.noRackData", { site: activeSite ? siteLabel(activeSite, t) : t("siteMap.site") })}</strong>
+                  <span>{t("siteMap.noRackHelp")}</span>
+                </div>
+              ) : null}
+            </div>
+          )}
         </section>
 
         {detailsOpen ? (
@@ -1262,35 +1285,44 @@ export default function DashboardClient({
           />
         ) : null}
 
-        <aside className="details-panel">
+        <aside className={drawerMode === "new" ? "details-panel creating-cable" : "details-panel"}>
           <div className="details-header">
-            <div className="section-title">{t("details.title")}</div>
+            <div className="section-title">{drawerMode === "new" ? t("form.newCable") : t("details.title")}</div>
             <button className="pane-toggle" onClick={() => setDetailsOpen(false)} title={t("action.collapseDetails")}>
               <X size={16} />
             </button>
           </div>
-          <div className="panel-toolbar">
-            <button className="primary-button compact" onClick={() => setDrawerMode("new")} disabled={!canEdit}>
-              <Cable size={16} />
-              {t("action.newCable")}
-            </button>
-            <a className="icon-button" href="/api/exports/excel" title={t("action.exportExcel")}>
-              <Download size={18} />
-            </a>
-            <a className="icon-button" href="/api/exports/pdf" title={t("action.exportPdf")}>
-              <FileText size={18} />
-            </a>
-            <a
-              className="icon-button"
-              href={`/api/exports/labels${selectedCableIds.length ? `?ids=${selectedCableIds.join(",")}` : ""}`}
-              title={t("action.labelPdf")}
-            >
-              <QrCode size={18} />
-            </a>
-            <button className="icon-button" onClick={sendPrintJob} disabled={!canReview || busy || selectedCableIds.length === 0} title={t("action.batchPrint")}>
-              <Printer size={18} />
-            </button>
-          </div>
+          {drawerMode === "new" ? (
+            <div className="panel-toolbar creation-panel-toolbar">
+              <button className="secondary-button compact" type="button" onClick={() => setDrawerMode("details")}>
+                <X size={16} />
+                {t("action.cancel")}
+              </button>
+            </div>
+          ) : (
+            <div className="panel-toolbar">
+              <button className="primary-button compact" onClick={() => setDrawerMode("new")} disabled={!canEdit}>
+                <Cable size={16} />
+                {t("action.newCable")}
+              </button>
+              <a className="icon-button" href="/api/exports/excel" title={t("action.exportExcel")}>
+                <Download size={18} />
+              </a>
+              <a className="icon-button" href="/api/exports/pdf" title={t("action.exportPdf")}>
+                <FileText size={18} />
+              </a>
+              <a
+                className="icon-button"
+                href={`/api/exports/labels${selectedCableIds.length ? `?ids=${selectedCableIds.join(",")}` : ""}`}
+                title={t("action.labelPdf")}
+              >
+                <QrCode size={18} />
+              </a>
+              <button className="icon-button" onClick={sendPrintJob} disabled={!canReview || busy || selectedCableIds.length === 0} title={t("action.batchPrint")}>
+                <Printer size={18} />
+              </button>
+            </div>
+          )}
 
           {pendingEndpoint || pendingConnections.length ? (
             <PatchQueuePanel
@@ -1314,10 +1346,20 @@ export default function DashboardClient({
           ) : null}
 
           {drawerMode === "new" ? (
-            <NewCableForm ports={allPorts} csrfToken={csrfToken} t={t} onSaved={async () => {
-              setDrawerMode("details");
-              await refresh();
-            }} />
+            <NewCableForm
+              ports={allPorts}
+              csrfToken={csrfToken}
+              t={t}
+              onCancel={() => setDrawerMode("details")}
+              onSaved={async (cableId) => {
+                await refresh();
+                setSelectedCableId(cableId || null);
+                setSelectedDeviceId(null);
+                setSelectedPortId(null);
+                setSelectedDeviceTemplateSlug(null);
+                setDrawerMode("details");
+              }}
+            />
           ) : (
             <Details
               cable={selectedCable || selectedPortCable}
@@ -1439,6 +1481,11 @@ function SiteMapNavigator({
   onSelectSite: (siteId: string) => void;
   t: Translate;
 }) {
+  const [mapZoom, setMapZoom] = useState(1);
+  const [mapPan, setMapPan] = useState({ x: 0, y: 0 });
+  const [isMapDragging, setIsMapDragging] = useState(false);
+  const mapCanvasRef = useRef<HTMLDivElement | null>(null);
+  const mapDragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
   const activeSite = activeSiteId ? sites.find((site) => site.id === activeSiteId) || null : null;
   const totalRackCount = sites.reduce((count, site) => count + site.racks.length, 0);
   const totalLineCount = sites.reduce((count, site) => count + site.lineCount, 0);
@@ -1456,6 +1503,86 @@ function SiteMapNavigator({
       .flatMap((link) => [link.from, link.to])
   );
 
+  function clampMapPanForZoom(pan: { x: number; y: number }, zoom: number) {
+    const rect = mapCanvasRef.current?.getBoundingClientRect();
+    const width = rect?.width || 1;
+    const height = rect?.height || 1;
+    const maxX = Math.max(0, width * (zoom - 1));
+    const maxY = Math.max(0, height * (zoom - 1));
+    return {
+      x: clamp(pan.x, -maxX, 0),
+      y: clamp(pan.y, -maxY, 0)
+    };
+  }
+
+  function zoomMap(nextZoom: number, focus?: { x: number; y: number }) {
+    const zoom = clamp(nextZoom, 1, 4);
+    const rect = mapCanvasRef.current?.getBoundingClientRect();
+    if (!rect || zoom <= 1.01) {
+      setMapZoom(1);
+      setMapPan({ x: 0, y: 0 });
+      return;
+    }
+
+    const focusPoint = focus || { x: rect.width / 2, y: rect.height / 2 };
+    const contentX = (focusPoint.x - mapPan.x) / mapZoom;
+    const contentY = (focusPoint.y - mapPan.y) / mapZoom;
+    setMapZoom(zoom);
+    setMapPan(clampMapPanForZoom({
+      x: focusPoint.x - contentX * zoom,
+      y: focusPoint.y - contentY * zoom
+    }, zoom));
+  }
+
+  function handleMapWheel(event: WheelEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const nextZoom = mapZoom * Math.exp(-event.deltaY * 0.0015);
+    zoomMap(nextZoom, {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    });
+  }
+
+  function handleMapPointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0 || mapZoom <= 1) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("button, a, .map-zoom-controls")) return;
+
+    mapDragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      panX: mapPan.x,
+      panY: mapPan.y
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsMapDragging(true);
+  }
+
+  function handleMapPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const drag = mapDragRef.current;
+    if (!drag) return;
+    const nextPan = {
+      x: drag.panX + event.clientX - drag.x,
+      y: drag.panY + event.clientY - drag.y
+    };
+    setMapPan(clampMapPanForZoom(nextPan, mapZoom));
+  }
+
+  function handleMapPointerUp(event: PointerEvent<HTMLDivElement>) {
+    if (!mapDragRef.current) return;
+    mapDragRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setIsMapDragging(false);
+  }
+
+  function resetMapView() {
+    setMapZoom(1);
+    setMapPan({ x: 0, y: 0 });
+  }
+
   return (
     <section className="site-map-card wan-map-card" aria-label="APAC WAN site map">
       <div className="site-map-head">
@@ -1472,82 +1599,123 @@ function SiteMapNavigator({
         </div>
       </div>
 
-      <div className="site-map-canvas wan-map-canvas">
-        <WorldBasemap t={t} />
-        <svg className="site-map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          {visibleWanLinks.flatMap((link) => {
-            const circuits = link.circuits || 1;
-            return Array.from({ length: circuits }, (_, index) => (
-              <path
-                key={`${link.from}-${link.to}-${index}`}
-                className={[
-                  "wan-link",
-                  circuits > 1 ? "multi-circuit" : "",
-                  `utilization-${link.utilization}`,
-                  activeSite && (link.from === activeSite.id || link.to === activeSite.id) ? "focus" : ""
-                ].join(" ")}
-                d={buildWanLinkPath(link, index, circuits)}
-              />
-            ));
-          })}
-          {visibleWanLinks.filter((link) => (link.circuits || 1) > 1).map((link) => {
-            const labelPoint = getWanLinkLabelPoint(link);
-            return (
-              <text key={`${link.from}-${link.to}-label`} className="wan-link-count" x={labelPoint.x} y={labelPoint.y}>
-                {link.circuits}x
-              </text>
-            );
-          })}
-          {sites.map((site) => {
-            const anchor = getSiteAnchor(site);
-            return (
-              <path
-                key={`${site.id}-leader`}
-                className="geo-site-leader"
-                d={`M${anchor.x} ${anchor.y} L${site.x} ${site.y}`}
-              />
-            );
-          })}
-        </svg>
-        {sites.map((site) => (
-          <button
-            key={site.id}
-            className={[
-              "site-node",
-              "geo-callout",
-              site.id === activeSite?.id ? "active" : "",
-              site.racks.length ? "ready" : "empty",
-              activeLinkSiteIds.has(site.id) ? "linked" : ""
-            ].join(" ")}
-            style={{
-              "--site-x": `${site.x}%`,
-              "--site-y": `${site.y}%`,
-              "--site-accent": getSiteAccent(site)
-            } as React.CSSProperties}
-            onClick={() => onSelectSite(site.id)}
-            aria-label={`${formatSiteDisplay(site, t)} · ${site.racks.length ? t("siteMap.nodeStats", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount }) : t("siteMap.notImported")}`}
-          >
-            <em>{countryLabel(site.country, t)}</em>
-            <strong>{siteLabel(site, t)}</strong>
-            {site.racks.length ? <span>{t("siteMap.nodeStatsMini", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount })}</span> : null}
+      <div
+        ref={mapCanvasRef}
+        className={[
+          "site-map-canvas",
+          "wan-map-canvas",
+          mapZoom > 1 ? "zoomed" : "",
+          isMapDragging ? "dragging" : ""
+        ].join(" ")}
+        onWheel={handleMapWheel}
+        onPointerDown={handleMapPointerDown}
+        onPointerMove={handleMapPointerMove}
+        onPointerUp={handleMapPointerUp}
+        onPointerCancel={handleMapPointerUp}
+        onDoubleClick={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest("button, a, .map-zoom-controls")) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          zoomMap(mapZoom * 1.45, {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+          });
+        }}
+      >
+        <div className="map-zoom-controls" aria-label={t("map.zoomControls")}>
+          <button type="button" onClick={() => zoomMap(mapZoom * 1.25)} title={t("map.zoomIn")} aria-label={t("map.zoomIn")}>
+            <Plus size={16} />
           </button>
-        ))}
-        {sites.map((site) => {
-          const anchor = getSitePinPosition(site);
-          return (
+          <span>{Math.round(mapZoom * 100)}%</span>
+          <button type="button" onClick={() => zoomMap(mapZoom / 1.25)} title={t("map.zoomOut")} aria-label={t("map.zoomOut")}>
+            <Minus size={16} />
+          </button>
+          <button type="button" onClick={resetMapView} title={t("map.resetView")} aria-label={t("map.resetView")}>
+            <RotateCcw size={16} />
+          </button>
+        </div>
+        <div
+          className="wan-map-viewport"
+          style={{
+            transform: `translate3d(${mapPan.x}px, ${mapPan.y}px, 0) scale(${mapZoom})`
+          }}
+        >
+          <WorldBasemap t={t} />
+          <svg className="site-map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {visibleWanLinks.flatMap((link) => {
+              const circuits = link.circuits || 1;
+              return Array.from({ length: circuits }, (_, index) => (
+                <path
+                  key={`${link.from}-${link.to}-${index}`}
+                  className={[
+                    "wan-link",
+                    circuits > 1 ? "multi-circuit" : "",
+                    `utilization-${link.utilization}`,
+                    activeSite && (link.from === activeSite.id || link.to === activeSite.id) ? "focus" : ""
+                  ].join(" ")}
+                  d={buildWanLinkPath(link, index, circuits)}
+                />
+              ));
+            })}
+            {visibleWanLinks.filter((link) => (link.circuits || 1) > 1).map((link) => {
+              const labelPoint = getWanLinkLabelPoint(link);
+              return (
+                <text key={`${link.from}-${link.to}-label`} className="wan-link-count" x={labelPoint.x} y={labelPoint.y}>
+                  {link.circuits}x
+                </text>
+              );
+            })}
+            {sites.map((site) => {
+              const anchor = getSiteAnchor(site);
+              return (
+                <path
+                  key={`${site.id}-leader`}
+                  className="geo-site-leader"
+                  d={`M${anchor.x} ${anchor.y} L${site.x} ${site.y}`}
+                />
+              );
+            })}
+          </svg>
+          {sites.map((site) => (
             <button
-              key={`${site.id}-pin`}
-              className={["geo-pin", site.id === activeSite?.id ? "active" : "", site.racks.length ? "ready" : "empty"].join(" ")}
+              key={site.id}
+              className={[
+                "site-node",
+                "geo-callout",
+                site.id === activeSite?.id ? "active" : "",
+                site.racks.length ? "ready" : "empty",
+                activeLinkSiteIds.has(site.id) ? "linked" : ""
+              ].join(" ")}
               style={{
-                "--pin-x": `${anchor.x}%`,
-                "--pin-y": `${anchor.y}%`,
+                "--site-x": `${site.x}%`,
+                "--site-y": `${site.y}%`,
                 "--site-accent": getSiteAccent(site)
               } as React.CSSProperties}
               onClick={() => onSelectSite(site.id)}
               aria-label={`${formatSiteDisplay(site, t)} · ${site.racks.length ? t("siteMap.nodeStats", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount }) : t("siteMap.notImported")}`}
-            />
-          );
-        })}
+            >
+              <em>{countryLabel(site.country, t)}</em>
+              <strong>{siteLabel(site, t)}</strong>
+              {site.racks.length ? <span>{t("siteMap.nodeStatsMini", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount })}</span> : null}
+            </button>
+          ))}
+          {sites.map((site) => {
+            const anchor = getSitePinPosition(site);
+            return (
+              <button
+                key={`${site.id}-pin`}
+                className={["geo-pin", site.id === activeSite?.id ? "active" : "", site.racks.length ? "ready" : "empty"].join(" ")}
+                style={{
+                  "--pin-x": `${anchor.x}%`,
+                  "--pin-y": `${anchor.y}%`,
+                  "--site-accent": getSiteAccent(site)
+                } as React.CSSProperties}
+                onClick={() => onSelectSite(site.id)}
+                aria-label={`${formatSiteDisplay(site, t)} · ${site.racks.length ? t("siteMap.nodeStats", { racks: site.racks.length, devices: site.deviceCount, lines: site.lineCount }) : t("siteMap.notImported")}`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       <div className="link-utilization-legend">
@@ -2022,6 +2190,22 @@ function RackFace({
   );
 }
 
+type RackDeviceFaceplateProps = {
+  device: DeviceDto;
+  height: number;
+  cables: CableDto[];
+  canEdit: boolean;
+  isPanMode: boolean;
+  queuedPortIds: Set<string>;
+  pendingEndpointId: string | null;
+  dragPortId: string | null;
+  selectedPortId: string | null;
+  onDragStart: (portId: string) => void;
+  onDragEnd: () => void;
+  onDropPort: (sourcePortId: string, targetPortId: string) => void;
+  onSelectPort: (portId: string) => void;
+};
+
 function RackDeviceFaceplate({
   device,
   height,
@@ -2036,28 +2220,36 @@ function RackDeviceFaceplate({
   onDragEnd,
   onDropPort,
   onSelectPort
-}: {
-  device: DeviceDto;
-  height: number;
-  cables: CableDto[];
-  canEdit: boolean;
-  isPanMode: boolean;
-  queuedPortIds: Set<string>;
-  pendingEndpointId: string | null;
-  dragPortId: string | null;
-  selectedPortId: string | null;
-  onDragStart: (portId: string) => void;
-  onDragEnd: () => void;
-  onDropPort: (sourcePortId: string, targetPortId: string) => void;
-  onSelectPort: (portId: string) => void;
-}) {
+}: RackDeviceFaceplateProps) {
   const ciscoTemplate = getCiscoDeviceTemplate(device);
   const category = getRackDeviceCategory(device);
+
+  if (ciscoTemplate?.officialImageUrl && shouldUseCiscoOfficialRackImage(ciscoTemplate)) {
+    return (
+      <CiscoOfficialRackFaceplate
+        ciscoTemplate={ciscoTemplate}
+        device={device}
+        height={height}
+        cables={cables}
+        canEdit={canEdit}
+        isPanMode={isPanMode}
+        queuedPortIds={queuedPortIds}
+        pendingEndpointId={pendingEndpointId}
+        dragPortId={dragPortId}
+        selectedPortId={selectedPortId}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDropPort={onDropPort}
+        onSelectPort={onSelectPort}
+      />
+    );
+  }
 
   if (ciscoTemplate?.kind === "router") {
     const groups = (ciscoTemplate.routerGroups || []).slice(0, Math.max(2, height * 2));
     return (
       <div className="rack-device-faceplate router rack-device-physical-face" aria-label={`${device.name} front panel`}>
+        <div className="rack-device-ear left" aria-hidden="true" />
         <div className="rack-physical-controls" aria-hidden="true">
           <span className="rack-mini-led" />
           <span className="rack-control-port" />
@@ -2068,6 +2260,10 @@ function RackDeviceFaceplate({
             <span key={group.id} />
           ))}
         </div>
+        <div className="rack-device-vents" aria-hidden="true">
+          {Array.from({ length: 18 }, (_, index) => <span key={index} />)}
+        </div>
+        <div className="rack-device-ear right" aria-hidden="true" />
       </div>
     );
   }
@@ -2079,10 +2275,12 @@ function RackDeviceFaceplate({
     const banks = groupCiscoPortsByBank(switchPorts.downlinks, downlinkGroup?.bankSize ?? 12);
     return (
       <div className="rack-device-faceplate switch rack-embedded-switch" aria-label={`${device.name} front panel`}>
+        <div className="rack-device-ear left" aria-hidden="true" />
         <div className="rack-embedded-cisco-panel" aria-label={`${device.name} front panel`}>
           <div className="rack-embedded-controls" aria-hidden="true">
             <span className="rack-mini-led" />
             <span className="rack-embedded-mode">MODE</span>
+            <span className="rack-control-slot" />
           </div>
           <div className="rack-embedded-banks">
             {banks.map((bank) => (
@@ -2125,12 +2323,81 @@ function RackDeviceFaceplate({
             />
           ) : null}
         </div>
+        <div className="rack-device-ear right" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  if (category === "patch" || category === "panduit") {
+    return (
+      <div className={`rack-device-faceplate ${category} rack-device-physical-face rack-patch-face`} aria-label={`${device.name} front panel`}>
+        <div className="rack-device-ear left" aria-hidden="true" />
+        <div className="rack-patch-label-strip" aria-hidden="true">
+          <span />
+          <span />
+        </div>
+        <PortGrid
+          ports={device.ports}
+          cables={cables}
+          canEdit={canEdit}
+          isPanMode={isPanMode}
+          queuedPortIds={queuedPortIds}
+          pendingEndpointId={pendingEndpointId}
+          dragPortId={dragPortId}
+          selectedPortId={selectedPortId}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDropPort={onDropPort}
+          onSelectPort={onSelectPort}
+          className="rack-patch-port-grid"
+          columns={device.ports.length > 24 ? 24 : 12}
+        />
+        <div className="rack-device-ear right" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  if (category === "server") {
+    return (
+      <div className="rack-device-faceplate server rack-device-physical-face rack-server-face" aria-label={`${device.name} front panel`}>
+        <div className="rack-device-ear left" aria-hidden="true" />
+        <div className="rack-server-drive-grid" aria-hidden="true">
+          {Array.from({ length: Math.max(4, Math.min(8, height * 4)) }, (_, index) => <span key={index} />)}
+        </div>
+        <div className="rack-server-control-stack" aria-hidden="true">
+          <span className="rack-mini-led" />
+          <span className="rack-control-port" />
+          <span className="rack-control-port small" />
+        </div>
+        {device.ports.length ? (
+          <PortGrid
+            ports={device.ports}
+            cables={cables}
+            canEdit={canEdit}
+            isPanMode={isPanMode}
+            queuedPortIds={queuedPortIds}
+            pendingEndpointId={pendingEndpointId}
+            dragPortId={dragPortId}
+            selectedPortId={selectedPortId}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDropPort={onDropPort}
+            onSelectPort={onSelectPort}
+            className="rack-server-nic-grid"
+            columns={Math.max(1, device.ports.length)}
+          />
+        ) : null}
+        <div className="rack-device-vents" aria-hidden="true">
+          {Array.from({ length: 14 }, (_, index) => <span key={index} />)}
+        </div>
+        <div className="rack-device-ear right" aria-hidden="true" />
       </div>
     );
   }
 
   return (
     <div className={`rack-device-faceplate ${category} rack-device-physical-face`} aria-label={`${device.name} front panel`}>
+      <div className="rack-device-ear left" aria-hidden="true" />
       <div className="rack-physical-controls" aria-hidden="true">
         <span className="rack-mini-led" />
         <span className="rack-control-port" />
@@ -2141,7 +2408,173 @@ function RackDeviceFaceplate({
           <span key={index} />
         ))}
       </div>
+      <div className="rack-device-vents" aria-hidden="true">
+        {Array.from({ length: 10 }, (_, index) => <span key={index} />)}
+      </div>
+      <div className="rack-device-ear right" aria-hidden="true" />
     </div>
+  );
+}
+
+function CiscoOfficialRackFaceplate({
+  device,
+  ciscoTemplate,
+  cables,
+  canEdit,
+  isPanMode,
+  queuedPortIds,
+  pendingEndpointId,
+  dragPortId,
+  selectedPortId,
+  onDragStart,
+  onDragEnd,
+  onDropPort,
+  onSelectPort
+}: RackDeviceFaceplateProps & { ciscoTemplate: CiscoDeviceTemplate }) {
+  const imageStyle = {
+    ...(ciscoTemplate.officialImageObjectPosition
+      ? { objectPosition: ciscoTemplate.officialImageObjectPosition }
+      : {}),
+    ...(ciscoTemplate.officialImageRackObjectPosition
+      ? { objectPosition: ciscoTemplate.officialImageRackObjectPosition }
+      : {}),
+    ...(ciscoTemplate.officialImageRackScale
+      ? { "--rack-official-image-scale": ciscoTemplate.officialImageRackScale }
+      : {})
+  } as React.CSSProperties;
+  const imageSrc = getCiscoOfficialImageSrc(ciscoTemplate);
+
+  if (ciscoTemplate.kind === "router") {
+    const routerPortGroups = (ciscoTemplate.routerGroups || [])
+      .map((group) => ({
+        group,
+        ports: getPortsByCiscoNames(device.ports, group.portNames || [])
+      }))
+      .filter(({ ports }) => ports.length);
+
+    return (
+      <div className="rack-device-faceplate router rack-official-cisco-face" aria-label={`${device.name} official Cisco device image`}>
+        <div className="rack-official-cisco-image-frame" aria-hidden="true">
+          <img
+            className="rack-official-cisco-image"
+            src={imageSrc}
+            alt=""
+            draggable={false}
+            style={imageStyle}
+          />
+        </div>
+        <div className="rack-official-cisco-shade" aria-hidden="true" />
+        {routerPortGroups.length ? (
+          <div className="rack-official-router-hotzones">
+            {routerPortGroups.map(({ group, ports }) => (
+              <div className="rack-official-router-group" key={group.id}>
+                <PortGrid
+                  ports={ports}
+                  cables={cables}
+                  canEdit={canEdit}
+                  isPanMode={isPanMode}
+                  queuedPortIds={queuedPortIds}
+                  pendingEndpointId={pendingEndpointId}
+                  dragPortId={dragPortId}
+                  selectedPortId={selectedPortId}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onDropPort={onDropPort}
+                  onSelectPort={onSelectPort}
+                  className="rack-official-router-grid"
+                  columns={group.columns ?? Math.max(1, ports.length)}
+                />
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  const switchPorts = getCiscoSwitchPorts(device, ciscoTemplate.downlinkPorts);
+  const downlinkGroup = ciscoTemplate.panelGroups.find((group) => group.selector === "downlink") || ciscoTemplate.panelGroups[0];
+  const uplinkGroup = ciscoTemplate.panelGroups.find((group) => group.selector === "uplink") || ciscoTemplate.panelGroups[1];
+  const banks = groupCiscoPortsByBank(switchPorts.downlinks, downlinkGroup?.bankSize ?? 12);
+
+  return (
+    <div className="rack-device-faceplate switch rack-official-cisco-face" aria-label={`${device.name} official Cisco device image`}>
+      <div className="rack-official-cisco-image-frame" aria-hidden="true">
+        <img
+          className="rack-official-cisco-image"
+          src={imageSrc}
+          alt=""
+          draggable={false}
+          style={imageStyle}
+        />
+      </div>
+      <div className="rack-official-cisco-shade" aria-hidden="true" />
+      <div className="rack-official-switch-hotzones">
+        {banks.length ? (
+          <div className="rack-official-downlink-banks">
+            {banks.map((bank) => (
+              <div className="rack-official-bank" key={bank.id}>
+                <PortGrid
+                  ports={bank.ports}
+                  cables={cables}
+                  canEdit={canEdit}
+                  isPanMode={isPanMode}
+                  queuedPortIds={queuedPortIds}
+                  pendingEndpointId={pendingEndpointId}
+                  dragPortId={dragPortId}
+                  selectedPortId={selectedPortId}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onDropPort={onDropPort}
+                  onSelectPort={onSelectPort}
+                  className="rack-official-downlink-grid"
+                  columns={downlinkGroup?.columns ?? 6}
+                />
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {switchPorts.uplinks.length ? (
+          <PortGrid
+            ports={switchPorts.uplinks}
+            cables={cables}
+            canEdit={canEdit}
+            isPanMode={isPanMode}
+            queuedPortIds={queuedPortIds}
+            pendingEndpointId={pendingEndpointId}
+            dragPortId={dragPortId}
+            selectedPortId={selectedPortId}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDropPort={onDropPort}
+            onSelectPort={onSelectPort}
+            className="rack-official-uplink-grid"
+            columns={uplinkGroup?.columns ?? Math.min(4, switchPorts.uplinks.length || 1)}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function CiscoOfficialReference({ ciscoTemplate, t }: { ciscoTemplate: CiscoDeviceTemplate; t: Translate }) {
+  const sourceUrl = ciscoTemplate.officialImageSourceUrl || ciscoTemplate.sourceUrl;
+  const sourceLabel = ciscoTemplate.officialImageSourceLabel || ciscoTemplate.sourceLabel;
+
+  return (
+    <figure className="cisco-official-reference">
+      <img
+        src={getCiscoOfficialImageSrc(ciscoTemplate)}
+        alt={ciscoTemplate.officialImageAlt || ciscoTemplate.title}
+        draggable={false}
+      />
+      <figcaption>
+        <span>{t("rack.ciscoOfficialImage")}</span>
+        <a href={sourceUrl} target="_blank" rel="noreferrer">
+          {sourceLabel}
+        </a>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -2234,6 +2667,9 @@ function DevicePanel({
               {t("rack.ciscoTemplate")}
             </a>
           </div>
+          {ciscoTemplate.officialImageUrl ? (
+            <CiscoOfficialReference ciscoTemplate={ciscoTemplate} t={t} />
+          ) : null}
           <div className="router-front-panel" aria-label={`${device.name} front panel`}>
             <div className="router-face-title">
               <strong>{ciscoTemplate.sku}</strong>
@@ -2305,19 +2741,7 @@ function DevicePanel({
           </a>
         </div>
         {ciscoTemplate.officialImageUrl ? (
-          <figure className="cisco-official-reference">
-            <img
-              src={ciscoTemplate.officialImageUrl}
-              alt={ciscoTemplate.officialImageAlt || ciscoTemplate.title}
-              draggable={false}
-            />
-            <figcaption>
-              <span>{t("rack.ciscoHardwareImage")}</span>
-              <a href={ciscoTemplate.sourceUrl} target="_blank" rel="noreferrer">
-                {ciscoTemplate.sourceLabel}
-              </a>
-            </figcaption>
-          </figure>
+          <CiscoOfficialReference ciscoTemplate={ciscoTemplate} t={t} />
         ) : null}
         <div className="cisco-front-panel" aria-label={`${device.name} front panel`}>
           <div className="cisco-controls" aria-hidden="true">
@@ -2422,6 +2846,16 @@ function getPortsByCiscoNames(ports: PortDto[], names: string[]) {
   return names
     .map((name) => portByName.get(name.toLowerCase()) || portByName.get(formatCiscoPortShortName(name).toLowerCase()))
     .filter(Boolean) as PortDto[];
+}
+
+function getCiscoOfficialImageSrc(ciscoTemplate: CiscoDeviceTemplate) {
+  return `/api/cisco-official-image?url=${encodeURIComponent(ciscoTemplate.officialImageUrl || "")}`;
+}
+
+function shouldUseCiscoOfficialRackImage(ciscoTemplate: CiscoDeviceTemplate) {
+  if (!ciscoTemplate.officialImageUrl) return false;
+  if (ciscoTemplate.officialImageRackView) return ciscoTemplate.officialImageRackView === "front";
+  return ciscoTemplate.kind !== "router";
 }
 
 function getCiscoSwitchPorts(device: DeviceDto, downlinkCount: number) {
@@ -3046,12 +3480,14 @@ function NewCableForm({
   ports,
   csrfToken,
   t,
+  onCancel,
   onSaved
 }: {
   ports: Array<PortDto & { device: DeviceDto }>;
   csrfToken: string;
   t: Translate;
-  onSaved: () => void;
+  onCancel: () => void;
+  onSaved: (cableId: string) => Promise<void>;
 }) {
   const [endpointAPortId, setEndpointAPortId] = useState(ports[0]?.id || "");
   const [endpointBPortId, setEndpointBPortId] = useState(ports[1]?.id || "");
@@ -3061,9 +3497,14 @@ function NewCableForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const options = ports.map((port) => ({ id: port.id, name: formatEndpoint(port) }));
+  const canSave = Boolean(endpointAPortId && endpointBPortId && endpointAPortId !== endpointBPortId);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!canSave) {
+      setError(t("api.error.endpointDifferent"));
+      return;
+    }
     setSaving(true);
     setError("");
     const response = await fetch("/api/cables", {
@@ -3081,7 +3522,8 @@ function NewCableForm({
     });
     setSaving(false);
     if (response.ok) {
-      onSaved();
+      const cable = (await response.json().catch(() => null)) as { id?: string } | null;
+      await onSaved(cable?.id || "");
       return;
     }
     const payload = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -3090,39 +3532,80 @@ function NewCableForm({
 
   return (
     <form className="new-cable-form" onSubmit={save}>
-      <div className="section-title">{t("form.newCable")}</div>
-      <label>
-        {t("form.cableId")}
-        <input value={cableId} onChange={(event) => setCableId(event.target.value)} />
-      </label>
-      <label>
-        {t("form.label")}
-        <input value={label} onChange={(event) => setLabel(event.target.value)} />
-      </label>
-      <label>
-        {t("form.endpointA")}
-        <select value={endpointAPortId} onChange={(event) => setEndpointAPortId(event.target.value)}>
-          {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
-        </select>
-      </label>
-      <label>
-        {t("form.endpointB")}
-        <select value={endpointBPortId} onChange={(event) => setEndpointBPortId(event.target.value)}>
-          {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
-        </select>
-      </label>
-      <label>
-        {t("form.color")}
-        <input value={color} onChange={(event) => setColor(event.target.value)} />
-      </label>
+      <section className="new-cable-section">
+        <div className="section-title">{t("form.cableDetails")}</div>
+        <label className="generated-cable-id">
+          {t("form.cableId")}
+          <input value={cableId} readOnly />
+          <small>{t("form.generatedId")}</small>
+        </label>
+        <label>
+          {t("form.label")}
+          <input value={label} onChange={(event) => setLabel(event.target.value)} />
+        </label>
+      </section>
+
+      <section className="new-cable-section">
+        <div className="section-title">{t("form.endpoints")}</div>
+        <label>
+          {t("form.endpointA")}
+          <select value={endpointAPortId} onChange={(event) => setEndpointAPortId(event.target.value)}>
+            {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+          </select>
+        </label>
+        <label>
+          {t("form.endpointB")}
+          <select value={endpointBPortId} onChange={(event) => setEndpointBPortId(event.target.value)}>
+            {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+          </select>
+        </label>
+      </section>
+
+      <section className="new-cable-section">
+        <div className="section-title">{t("form.appearance")}</div>
+        <div className="color-swatch-grid" role="radiogroup" aria-label={t("form.color")}>
+          {cableColorOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={color === option.value}
+              className={color === option.value ? "active" : ""}
+              style={{ "--cable-color": option.hex } as React.CSSProperties}
+              onClick={() => setColor(option.value)}
+              title={t(option.labelKey)}
+              aria-label={t(option.labelKey)}
+            >
+              <span />
+            </button>
+          ))}
+        </div>
+      </section>
+
       {error ? <p className="form-error">{error}</p> : null}
-      <button className="primary-button" disabled={saving}>
-        <Check size={16} />
-        {t("action.save")}
-      </button>
+      <div className="new-cable-actions">
+        <button className="secondary-button" type="button" onClick={onCancel}>
+          <X size={16} />
+          {t("action.cancel")}
+        </button>
+        <button className="primary-button" disabled={saving || !canSave}>
+          <Check size={16} />
+          {t("action.save")}
+        </button>
+      </div>
     </form>
   );
 }
+
+const cableColorOptions: Array<{ value: string; hex: string; labelKey: TranslationKey }> = [
+  { value: "blue", hex: "#0a84ff", labelKey: "color.blue" },
+  { value: "green", hex: "#34c759", labelKey: "color.green" },
+  { value: "yellow", hex: "#ffcc00", labelKey: "color.yellow" },
+  { value: "orange", hex: "#ff9f0a", labelKey: "color.orange" },
+  { value: "red", hex: "#ff3b30", labelKey: "color.red" },
+  { value: "purple", hex: "#5856d6", labelKey: "color.purple" },
+  { value: "gray", hex: "#8e8e93", labelKey: "color.gray" }
+];
 
 function findCableForPort(portId: string, cables: CableDto[]) {
   return cables.find((cable) => cable.status !== "retired" && (cable.endpointAPortId === portId || cable.endpointBPortId === portId)) || null;

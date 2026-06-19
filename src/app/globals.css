@@ -22,6 +22,584 @@
   --shadow: 0 26px 70px rgba(2, 8, 23, 0.44);
 }
 
+body .global-map-entry {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(10, 132, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(10, 132, 255, 0.07);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+body .global-map-entry svg {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 9px;
+  background: rgba(10, 132, 255, 0.12);
+  color: var(--blue);
+}
+
+body .global-map-entry span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+body .global-map-entry strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body .global-map-entry small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 560;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body .global-map-entry:hover,
+body .global-map-entry.active {
+  border-color: rgba(10, 132, 255, 0.72);
+  background: rgba(10, 132, 255, 0.13);
+}
+
+body .global-map-entry:focus-visible {
+  outline: 3px solid rgba(10, 132, 255, 0.24);
+  outline-offset: 2px;
+}
+
+body .rack-view-toolbar .toolbar-global-map-button {
+  border-color: rgba(10, 132, 255, 0.52) !important;
+  background: rgba(10, 132, 255, 0.1) !important;
+  color: var(--blue) !important;
+}
+
+body .rack-view-toolbar .toolbar-global-map-button:hover {
+  border-color: rgba(10, 132, 255, 0.78) !important;
+  background: rgba(10, 132, 255, 0.16) !important;
+}
+
+body .rack-view-toolbar .toolbar-divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 2px;
+  background: rgba(142, 142, 147, 0.34);
+}
+
+html[data-theme="dark"] body .global-map-entry {
+  border-color: rgba(10, 132, 255, 0.42);
+  background: rgba(10, 132, 255, 0.13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] body .global-map-entry svg {
+  background: rgba(10, 132, 255, 0.2);
+  color: #8ecbff;
+}
+
+html[data-theme="dark"] body .global-map-entry:hover,
+html[data-theme="dark"] body .global-map-entry.active {
+  border-color: rgba(10, 132, 255, 0.76);
+  background: rgba(10, 132, 255, 0.2);
+}
+
+html[data-theme="dark"] body .rack-view-toolbar .toolbar-global-map-button {
+  border-color: rgba(92, 184, 255, 0.54) !important;
+  background: rgba(10, 132, 255, 0.16) !important;
+  color: #b9dcff !important;
+}
+
+body .workspace:not(.details-collapsed) .cabinet-overview,
+body .details-collapsed .cabinet-overview,
+body .cabinet-overview {
+  width: min(1320px, calc((var(--office-rack-count, 1) * 420px) + 32px)) !important;
+  min-width: min(1320px, calc((var(--office-rack-count, 1) * 380px) + 32px)) !important;
+  border-color: rgba(198, 203, 212, 0.92) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 18px 46px rgba(29, 29, 31, 0.08) !important;
+}
+
+body .cabinet-faces {
+  grid-template-columns: repeat(var(--office-rack-count, 1), minmax(360px, 1fr)) !important;
+  gap: 18px !important;
+}
+
+body .cabinet-face {
+  padding: 12px !important;
+  border: 1px solid rgba(22, 24, 29, 0.95) !important;
+  border-radius: 10px !important;
+  background:
+    linear-gradient(90deg, #050609 0 8px, #2b2d31 8px 13px, transparent 13px calc(100% - 13px), #2b2d31 calc(100% - 13px) calc(100% - 8px), #050609 calc(100% - 8px)),
+    linear-gradient(180deg, #22252b, #090a0d 9%, #07080a 92%, #24272d) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.86),
+    0 16px 34px rgba(0, 0, 0, 0.18) !important;
+}
+
+body .cabinet-face.active {
+  border-color: rgba(10, 132, 255, 0.88) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.86),
+    0 0 0 2px rgba(10, 132, 255, 0.36),
+    0 18px 42px rgba(10, 132, 255, 0.12) !important;
+}
+
+body .cabinet-face-label {
+  min-height: 34px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 7px !important;
+  background:
+    linear-gradient(180deg, #44484f, #22262c 54%, #111419) !important;
+  color: #f5f7fb !important;
+  letter-spacing: 0 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55) !important;
+}
+
+body .cabinet-grid {
+  grid-template-columns: 34px minmax(0, 1fr) 34px !important;
+  gap: 8px !important;
+}
+
+body .cabinet-numbers,
+body .cabinet-bay {
+  grid-template-rows: repeat(var(--rack-units), 23px) !important;
+}
+
+body .cabinet-numbers {
+  color: #e3e6eb !important;
+  font-size: 9px !important;
+  text-shadow: 0 1px 0 #000 !important;
+}
+
+body .cabinet-numbers span {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  background:
+    linear-gradient(90deg, #050608, #1b1e24 45%, #090a0d) !important;
+}
+
+body .cabinet-bay {
+  position: relative !important;
+  padding: 0 18px !important;
+  border: 3px solid #4c525b !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(90deg, #17191e 0 15px, transparent 15px calc(100% - 15px), #17191e calc(100% - 15px)),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.038) 0 1px, transparent 1px 23px),
+    linear-gradient(180deg, #0c0d10, #15171b 45%, #0a0b0d) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 12px 0 18px rgba(0, 0, 0, 0.44),
+    inset -12px 0 18px rgba(0, 0, 0, 0.44) !important;
+  overflow: hidden !important;
+}
+
+body .cabinet-bay::before,
+body .cabinet-bay::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 1 !important;
+  top: 4px !important;
+  bottom: 4px !important;
+  width: 8px !important;
+  border-radius: 999px !important;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 5px,
+      rgba(0, 0, 0, 0.72) 5px 10px,
+      rgba(115, 121, 132, 0.5) 10px 12px,
+      transparent 12px 23px
+    ) !important;
+  pointer-events: none !important;
+}
+
+body .cabinet-bay::before {
+  left: 5px !important;
+}
+
+body .cabinet-bay::after {
+  right: 5px !important;
+}
+
+body .cabinet-u-line {
+  position: relative !important;
+  z-index: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+body .cabinet-device {
+  z-index: 3 !important;
+  margin: 1px 7px !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08),
+    0 7px 14px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
+}
+
+body .cabinet-device::before,
+body .cabinet-device::after {
+  display: none !important;
+}
+
+body .cabinet-device:hover,
+body .cabinet-device.selected {
+  box-shadow:
+    0 0 0 2px rgba(10, 132, 255, 0.8),
+    0 0 0 5px rgba(10, 132, 255, 0.2),
+    0 10px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+body .rack-device-faceplate,
+body .workspace:not(.details-collapsed) .rack-device-faceplate {
+  position: relative !important;
+  height: 100% !important;
+  min-height: 20px !important;
+  display: grid !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 18px !important;
+  border: 1px solid rgba(34, 39, 48, 0.9) !important;
+  border-radius: 5px !important;
+  color: #0f172a !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #e9eef4 0%, #b5c1cf 47%, #7e8b9b 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+}
+
+body .rack-device-faceplate.switch,
+body .rack-device-faceplate.rack-embedded-switch {
+  grid-template-columns: 14px minmax(0, 1fr) 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.23), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #edf2f7, #b5c0cb 58%, #7b8794) !important;
+}
+
+body .rack-device-faceplate.router {
+  grid-template-columns: 14px 34px minmax(0, 1fr) minmax(50px, 0.7fr) 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 20%, transparent 80%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, #d9e1ea, #8997a8 48%, #4d5968) !important;
+}
+
+body .rack-device-faceplate.server {
+  grid-template-columns: 14px minmax(72px, 1fr) 34px minmax(22px, 0.36fr) minmax(52px, 0.7fr) 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.25)),
+    linear-gradient(180deg, #3a3f47, #161a20 58%, #0b0d11) !important;
+}
+
+body .rack-device-faceplate.patch,
+body .rack-device-faceplate.panduit,
+body .rack-patch-face {
+  grid-template-columns: 14px minmax(30px, 0.32fr) minmax(0, 1fr) 14px !important;
+  background:
+    linear-gradient(180deg, #fff4cc, #e7d391 55%, #b79648) !important;
+}
+
+body .rack-device-ear {
+  align-self: stretch !important;
+  min-width: 10px !important;
+  border: 1px solid rgba(22, 24, 29, 0.7) !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 50% 23%, #0b0c0f 0 2px, #747b86 2px 3px, transparent 3px),
+    radial-gradient(circle at 50% 77%, #0b0c0f 0 2px, #747b86 2px 3px, transparent 3px),
+    linear-gradient(180deg, #555b64, #272b32 52%, #111318) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.1),
+    inset -1px 0 0 rgba(0, 0, 0, 0.42) !important;
+}
+
+body .rack-embedded-cisco-panel {
+  height: 100% !important;
+  min-height: 18px !important;
+  grid-template-columns: 30px minmax(0, 1fr) minmax(30px, auto) !important;
+  gap: 4px !important;
+  padding: 2px 4px !important;
+  border: 1px solid rgba(55, 64, 78, 0.78) !important;
+  border-radius: 4px !important;
+  background:
+    linear-gradient(180deg, #dfe7ef, #b3bfcc 54%, #818d9b) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.26) !important;
+}
+
+body .rack-embedded-controls,
+body .rack-physical-controls,
+body .rack-server-control-stack {
+  height: 100% !important;
+  min-height: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 2px !important;
+  padding: 2px !important;
+  border: 1px solid rgba(0, 0, 0, 0.54) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(180deg, #223045, #111824) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+body .rack-mini-led {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 999px !important;
+  background: #35d07f !important;
+  box-shadow: 0 0 8px rgba(53, 208, 127, 0.8) !important;
+}
+
+body .rack-control-port,
+body .rack-control-slot {
+  width: 17px !important;
+  height: 7px !important;
+  border: 1px solid rgba(170, 183, 194, 0.5) !important;
+  border-radius: 2px !important;
+  background: #26313d !important;
+}
+
+body .rack-control-port.small {
+  width: 12px !important;
+}
+
+body .rack-embedded-mode {
+  max-width: 22px !important;
+  min-height: 8px !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-size: 4.8px !important;
+}
+
+body .rack-embedded-banks {
+  gap: 3px !important;
+}
+
+body .rack-embedded-bank {
+  min-height: 13px !important;
+  padding: 1px !important;
+  border-color: rgba(88, 98, 112, 0.68) !important;
+  border-radius: 3px !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(68, 84, 78, 0.18) 0 8px, transparent 8px 14px),
+    linear-gradient(180deg, #f9fbf7, #d5ded9) !important;
+}
+
+body .rack-embedded-downlink-grid,
+body .rack-embedded-uplink-grid,
+body .rack-patch-port-grid,
+body .rack-server-nic-grid {
+  display: grid !important;
+  min-width: 0 !important;
+  gap: 1px !important;
+}
+
+body .rack-embedded-downlink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(7px, 1fr)) !important;
+}
+
+body .rack-embedded-uplink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(12px, 1fr)) !important;
+}
+
+body .rack-patch-port-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(5px, 1fr)) !important;
+  grid-auto-rows: minmax(6px, 1fr) !important;
+  align-content: center !important;
+}
+
+body .rack-server-nic-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(14px, 1fr)) !important;
+}
+
+body .rack-embedded-downlink-grid .port-button,
+body .rack-embedded-uplink-grid .port-button,
+body .rack-patch-port-grid .port-button,
+body .rack-server-nic-grid .port-button {
+  min-width: 0 !important;
+  min-height: 6px !important;
+  height: 8px !important;
+  padding: 0 !important;
+  border-radius: 2px !important;
+  border-color: rgba(87, 96, 112, 0.8) !important;
+  background: #f8fafc !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+body .rack-embedded-uplink-grid .port-button,
+body .rack-server-nic-grid .port-button {
+  height: 12px !important;
+  min-height: 12px !important;
+}
+
+body .rack-patch-port-grid .port-button {
+  height: 7px !important;
+  min-height: 7px !important;
+}
+
+body .rack-embedded-downlink-grid .port-button.confirmed,
+body .rack-embedded-uplink-grid .port-button.confirmed,
+body .rack-patch-port-grid .port-button.confirmed,
+body .rack-server-nic-grid .port-button.confirmed {
+  background: #c9f4d9 !important;
+  border-color: #34c759 !important;
+}
+
+body .rack-embedded-downlink-grid .port-button.pending_verification,
+body .rack-embedded-uplink-grid .port-button.pending_verification,
+body .rack-patch-port-grid .port-button.pending_verification,
+body .rack-server-nic-grid .port-button.pending_verification {
+  background: #fff1ba !important;
+  border-color: #ffcc00 !important;
+}
+
+body .rack-embedded-downlink-grid .port-button.draft,
+body .rack-embedded-uplink-grid .port-button.draft,
+body .rack-patch-port-grid .port-button.draft,
+body .rack-server-nic-grid .port-button.draft {
+  background: #dcecff !important;
+  border-color: #0a84ff !important;
+}
+
+body .rack-embedded-downlink-grid .port-button.selected,
+body .rack-embedded-uplink-grid .port-button.selected,
+body .rack-patch-port-grid .port-button.selected,
+body .rack-server-nic-grid .port-button.selected {
+  outline: 2px solid rgba(10, 132, 255, 0.9) !important;
+  outline-offset: 1px !important;
+}
+
+body .rack-mini-router-groups {
+  height: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(22px, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 3px !important;
+}
+
+body .rack-mini-router-groups span,
+body .rack-generic-slots span {
+  min-height: 11px !important;
+  border: 1px solid rgba(31, 38, 50, 0.72) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(180deg, #414956, #202631) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36) !important;
+}
+
+body .rack-device-vents {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(3px, 1fr)) !important;
+  gap: 2px !important;
+  align-items: center !important;
+}
+
+body .rack-device-vents span {
+  height: 11px !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, #050608, #272b32 50%, #050608) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body .rack-generic-slots {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(12px, 1fr)) !important;
+  gap: 3px !important;
+}
+
+body .rack-patch-label-strip {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 3px !important;
+}
+
+body .rack-patch-label-strip span {
+  border: 1px solid rgba(143, 121, 60, 0.55) !important;
+  border-radius: 2px !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(120, 94, 39, 0.16) 0 7px, transparent 7px 13px),
+    rgba(255, 255, 255, 0.46) !important;
+}
+
+body .rack-server-drive-grid {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+}
+
+body .rack-server-drive-grid span {
+  border: 1px solid rgba(152, 160, 172, 0.3) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 22%),
+    linear-gradient(180deg, #272d36, #10141a) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] body .cabinet-overview {
+  border-color: rgba(247, 250, 255, 0.16) !important;
+  background: rgba(18, 22, 30, 0.86) !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.switch,
+html[data-theme="dark"] body .rack-device-faceplate.rack-embedded-switch {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.23), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #dce4ed, #aeb8c4 58%, #7b8794) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.patch,
+html[data-theme="dark"] body .rack-device-faceplate.panduit,
+html[data-theme="dark"] body .rack-patch-face {
+  background:
+    linear-gradient(180deg, #fff0b7, #d0b15d 55%, #8c6e30) !important;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -2878,6 +3456,1779 @@ body.pane-resizing {
   .oauth-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Overview map and cable-creation inspector refinements. */
+body .rack-stage.overview-stage {
+  display: block !important;
+  overflow: hidden !important;
+  padding: 14px 18px 16px !important;
+}
+
+body .rack-stage.overview-stage .site-map-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+  gap: 10px !important;
+  padding: 14px !important;
+}
+
+body .rack-stage.overview-stage .site-map-head {
+  align-items: center !important;
+}
+
+body .rack-stage.overview-stage .site-map-head p {
+  margin-top: 4px !important;
+}
+
+body .rack-stage.overview-stage .wan-map-canvas {
+  height: auto !important;
+  min-height: 0 !important;
+  margin-top: 0 !important;
+  touch-action: none !important;
+  cursor: zoom-in;
+}
+
+body .wan-map-canvas.zoomed {
+  cursor: grab;
+}
+
+body .wan-map-canvas.dragging,
+body .wan-map-canvas.dragging * {
+  cursor: grabbing !important;
+}
+
+body .wan-map-viewport {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+body .map-zoom-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 24;
+  display: grid;
+  grid-template-columns: 36px minmax(54px, auto) 36px 36px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(205, 208, 216, 0.92);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 22px rgba(29, 29, 31, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+body .map-zoom-controls button {
+  width: 36px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-right: 1px solid rgba(217, 220, 227, 0.86);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+body .map-zoom-controls button:last-child {
+  border-right: 0;
+}
+
+body .map-zoom-controls button:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+body .map-zoom-controls span {
+  min-width: 54px;
+  padding: 0 8px;
+  border-right: 1px solid rgba(217, 220, 227, 0.86);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+body .rack-stage.overview-stage .link-utilization-legend {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: 0 !important;
+  padding: 8px 10px !important;
+}
+
+body .rack-stage.overview-stage .link-utilization-legend div {
+  gap: 6px 14px;
+}
+
+body .rack-stage.overview-stage .link-utilization-legend span {
+  font-size: 11px;
+}
+
+body .rack-stage.overview-stage .site-map-footer {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 10px !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+}
+
+body .rack-stage.overview-stage .site-map-footer > div {
+  min-width: 0;
+  padding: 10px 12px !important;
+}
+
+body .details-panel.creating-cable {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body .details-panel.creating-cable .details-header,
+body .details-panel.creating-cable .creation-panel-toolbar {
+  flex: 0 0 auto;
+}
+
+body .details-panel.creating-cable .creation-panel-toolbar {
+  grid-template-columns: 1fr !important;
+}
+
+body .details-panel.creating-cable .creation-panel-toolbar .secondary-button {
+  min-height: 38px;
+}
+
+body .details-panel.creating-cable .new-cable-form {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 2px 0;
+  border-bottom: 0;
+}
+
+body .details-panel .new-cable-section {
+  display: grid;
+  gap: 10px;
+  padding: 12px !important;
+  border: 1px solid rgba(217, 220, 227, 0.9) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+body .new-cable-form label {
+  gap: 7px;
+}
+
+body .generated-cable-id input {
+  color: var(--muted);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body .generated-cable-id small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+body .color-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(30px, 1fr));
+  gap: 8px;
+}
+
+body .color-swatch-grid button {
+  min-height: 34px;
+  margin: 0 !important;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(205, 208, 216, 0.95);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+}
+
+body .color-swatch-grid button span {
+  width: 18px;
+  height: 18px;
+  display: block;
+  border-radius: 999px;
+  background: var(--cable-color);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.12);
+}
+
+body .color-swatch-grid button.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.16);
+}
+
+body .new-cable-actions {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
+  gap: 10px;
+  margin-top: auto;
+  padding: 12px 0 2px;
+  background: linear-gradient(180deg, rgba(251, 251, 253, 0), rgba(251, 251, 253, 0.96) 22%, rgba(251, 251, 253, 0.98));
+}
+
+body .new-cable-actions button {
+  margin: 0 !important;
+}
+
+body .new-cable-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+html[data-theme="dark"] body .map-zoom-controls,
+html[data-theme="dark"] body .details-panel .new-cable-section,
+html[data-theme="dark"] body .color-swatch-grid button {
+  border-color: rgba(247, 250, 255, 0.16);
+  background: rgba(27, 31, 40, 0.9);
+}
+
+html[data-theme="dark"] body .new-cable-actions {
+  background: linear-gradient(180deg, rgba(18, 22, 31, 0), rgba(18, 22, 31, 0.96) 22%, rgba(18, 22, 31, 0.98));
+}
+
+@media (max-width: 760px) {
+  body .workspace.workbench-overview,
+  body .workspace.workbench-overview.sidebar-collapsed,
+  body .workspace.workbench-overview.details-collapsed,
+  body .workspace.workbench-overview.sidebar-collapsed.details-collapsed {
+    grid-template-areas:
+      "rack"
+      "sidebar"
+      "details" !important;
+  }
+
+  body .rack-stage.overview-stage {
+    overflow: auto !important;
+  }
+
+  body .rack-stage.overview-stage .site-map-card {
+    width: 1040px !important;
+    min-width: 1040px !important;
+    height: 720px !important;
+  }
+
+  body .rack-stage.overview-stage .wan-map-canvas .real-world-map,
+  body .rack-stage.overview-stage .wan-map-canvas .site-map-lines {
+    transform: none !important;
+  }
+
+  body .rack-stage.overview-stage .wan-map-card .site-node {
+    transform: translate(-50%, -50%) !important;
+  }
+
+  body .rack-stage.overview-stage .site-map-footer {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cisco rack imagery compatibility overrides. */
+html body .workspace:not(.details-collapsed) .cabinet-overview,
+html body .details-collapsed .cabinet-overview,
+html body .cabinet-overview {
+  width: min(1320px, calc((var(--office-rack-count, 1) * 430px) + 32px)) !important;
+  min-width: min(1320px, calc((var(--office-rack-count, 1) * 390px) + 32px)) !important;
+}
+
+html body .cabinet-faces {
+  grid-template-columns: repeat(var(--office-rack-count, 1), minmax(370px, 1fr)) !important;
+}
+
+html body .cabinet-numbers,
+html body .cabinet-bay {
+  grid-template-rows: repeat(var(--rack-units), 24px) !important;
+}
+
+html body .cabinet-device {
+  margin: 1px 8px !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face,
+html body .workspace:not(.details-collapsed) .rack-device-faceplate.rack-official-cisco-face {
+  position: relative !important;
+  min-height: 22px !important;
+  display: block !important;
+  padding: 2px 17px !important;
+  border: 1px solid rgba(8, 11, 16, 0.92) !important;
+  border-radius: 4px !important;
+  background:
+    linear-gradient(90deg, #15181d 0 14px, transparent 14px calc(100% - 14px), #15181d calc(100% - 14px)),
+    linear-gradient(180deg, #f0f3f6 0%, #c1cad4 48%, #7d8794 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 7px 14px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::before,
+html body .rack-device-faceplate.rack-official-cisco-face::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 3 !important;
+  top: 2px !important;
+  bottom: 2px !important;
+  width: 13px !important;
+  border: 1px solid rgba(4, 6, 10, 0.68) !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 50% 25%, #020305 0 2px, #8b939f 2px 3px, transparent 3px),
+    radial-gradient(circle at 50% 75%, #020305 0 2px, #8b939f 2px 3px, transparent 3px),
+    linear-gradient(180deg, #5c636d, #252a31 54%, #0d1014) !important;
+  pointer-events: none !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::before {
+  left: 2px !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::after {
+  right: 2px !important;
+}
+
+html body .rack-official-cisco-image-frame {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 2px 16px !important;
+  display: block !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(72, 80, 92, 0.72) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, #e8edf2 0%, #c4ccd6 54%, #929ca8 100%) !important;
+}
+
+html body .rack-official-cisco-image {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+  object-position: center !important;
+  transform: none !important;
+  transform-origin: center !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.08) saturate(0.96) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+html body .rack-official-cisco-shade {
+  z-index: 1 !important;
+  inset: 2px 16px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 7%, transparent 93%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 45%, rgba(0, 0, 0, 0.12)) !important;
+}
+
+html body .rack-official-switch-hotzones {
+  z-index: 2 !important;
+  inset: 18% 8.5% 18% 8.5% !important;
+  grid-template-columns: minmax(0, 1fr) minmax(20px, 0.16fr) !important;
+  gap: 4px !important;
+}
+
+html body .rack-official-downlink-grid .port-button,
+html body .rack-official-uplink-grid .port-button,
+html body .rack-official-router-grid .port-button {
+  min-width: 0 !important;
+  min-height: 5px !important;
+  height: 7px !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 2px !important;
+  background: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  opacity: 0.08 !important;
+  box-shadow: none !important;
+}
+
+html body .rack-official-uplink-grid .port-button,
+html body .rack-official-router-grid .port-button {
+  min-height: 8px !important;
+  height: 9px !important;
+}
+
+html body .rack-official-cisco-face:hover .port-button,
+html body .cabinet-device.selected .rack-official-cisco-face .port-button,
+html body .rack-official-downlink-grid .port-button:hover,
+html body .rack-official-uplink-grid .port-button:hover,
+html body .rack-official-router-grid .port-button:hover {
+  opacity: 1 !important;
+  border-color: rgba(10, 132, 255, 0.86) !important;
+  background: rgba(10, 132, 255, 0.16) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.confirmed,
+html body .rack-official-uplink-grid .port-button.confirmed,
+html body .rack-official-router-grid .port-button.confirmed {
+  opacity: 0.58 !important;
+  border-color: rgba(52, 199, 89, 0.82) !important;
+  background: rgba(52, 199, 89, 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(52, 199, 89, 0.2) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.pending_verification,
+html body .rack-official-uplink-grid .port-button.pending_verification,
+html body .rack-official-router-grid .port-button.pending_verification {
+  opacity: 0.6 !important;
+  border-color: rgba(255, 204, 0, 0.86) !important;
+  background: rgba(255, 204, 0, 0.1) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.draft,
+html body .rack-official-uplink-grid .port-button.draft,
+html body .rack-official-router-grid .port-button.draft,
+html body .rack-official-downlink-grid .port-button.planned,
+html body .rack-official-uplink-grid .port-button.planned,
+html body .rack-official-router-grid .port-button.planned {
+  opacity: 0.52 !important;
+  border-color: rgba(10, 132, 255, 0.78) !important;
+  background: rgba(10, 132, 255, 0.08) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.faulty,
+html body .rack-official-uplink-grid .port-button.faulty,
+html body .rack-official-router-grid .port-button.faulty {
+  opacity: 0.78 !important;
+  border-color: rgba(255, 69, 58, 0.9) !important;
+  background: rgba(255, 69, 58, 0.12) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.retired,
+html body .rack-official-uplink-grid .port-button.retired,
+html body .rack-official-router-grid .port-button.retired {
+  opacity: 0.42 !important;
+  border-color: rgba(142, 142, 147, 0.72) !important;
+  background: rgba(142, 142, 147, 0.08) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.selected,
+html body .rack-official-uplink-grid .port-button.selected,
+html body .rack-official-router-grid .port-button.selected,
+html body .rack-official-downlink-grid .port-button.queued,
+html body .rack-official-uplink-grid .port-button.queued,
+html body .rack-official-router-grid .port-button.queued,
+html body .rack-official-downlink-grid .port-button.pending-start,
+html body .rack-official-uplink-grid .port-button.pending-start,
+html body .rack-official-router-grid .port-button.pending-start {
+  opacity: 1 !important;
+  border-color: rgba(10, 132, 255, 0.95) !important;
+  background: rgba(10, 132, 255, 0.2) !important;
+  outline: 1px solid rgba(255, 255, 255, 0.8) !important;
+  outline-offset: 1px !important;
+}
+
+@media (max-width: 760px) {
+  html body .workspace:not(.details-collapsed) .cabinet-overview,
+  html body .details-collapsed .cabinet-overview,
+  html body .cabinet-overview {
+    width: min(1120px, calc((var(--office-rack-count, 1) * 380px) + 32px)) !important;
+    min-width: min(1120px, calc((var(--office-rack-count, 1) * 340px) + 32px)) !important;
+  }
+
+  html body .cabinet-faces {
+    grid-template-columns: repeat(var(--office-rack-count, 1), minmax(330px, 1fr)) !important;
+  }
+
+  html body .cabinet-numbers,
+  html body .cabinet-bay {
+    grid-template-rows: repeat(var(--rack-units), 22px) !important;
+  }
+}
+
+/* Cisco official rack imagery base pass. */
+html body .workspace:not(.details-collapsed) .cabinet-overview,
+html body .details-collapsed .cabinet-overview,
+html body .cabinet-overview {
+  width: min(1320px, calc((var(--office-rack-count, 1) * 430px) + 32px)) !important;
+  min-width: min(1320px, calc((var(--office-rack-count, 1) * 390px) + 32px)) !important;
+}
+
+html body .cabinet-faces {
+  grid-template-columns: repeat(var(--office-rack-count, 1), minmax(370px, 1fr)) !important;
+}
+
+html body .cabinet-numbers,
+html body .cabinet-bay {
+  grid-template-rows: repeat(var(--rack-units), 24px) !important;
+}
+
+html body .cabinet-device {
+  margin: 1px 8px !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face,
+html body .workspace:not(.details-collapsed) .rack-device-faceplate.rack-official-cisco-face {
+  position: relative !important;
+  min-height: 22px !important;
+  display: block !important;
+  padding: 2px 17px !important;
+  border: 1px solid rgba(8, 11, 16, 0.92) !important;
+  border-radius: 4px !important;
+  background:
+    linear-gradient(90deg, #15181d 0 14px, transparent 14px calc(100% - 14px), #15181d calc(100% - 14px)),
+    linear-gradient(180deg, #f0f3f6 0%, #c1cad4 48%, #7d8794 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 7px 14px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::before,
+html body .rack-device-faceplate.rack-official-cisco-face::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 3 !important;
+  top: 2px !important;
+  bottom: 2px !important;
+  width: 13px !important;
+  border: 1px solid rgba(4, 6, 10, 0.68) !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 50% 25%, #020305 0 2px, #8b939f 2px 3px, transparent 3px),
+    radial-gradient(circle at 50% 75%, #020305 0 2px, #8b939f 2px 3px, transparent 3px),
+    linear-gradient(180deg, #5c636d, #252a31 54%, #0d1014) !important;
+  pointer-events: none !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::before {
+  left: 2px !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::after {
+  right: 2px !important;
+}
+
+html body .rack-official-cisco-image-frame {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 2px 16px !important;
+  display: block !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(72, 80, 92, 0.72) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, #e8edf2 0%, #c4ccd6 54%, #929ca8 100%) !important;
+}
+
+html body .rack-official-cisco-image {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  transform: scale(var(--rack-official-image-scale, 1.34)) !important;
+  transform-origin: center !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.08) saturate(0.96) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+html body .rack-official-cisco-shade {
+  z-index: 1 !important;
+  inset: 2px 16px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 7%, transparent 93%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 45%, rgba(0, 0, 0, 0.12)) !important;
+}
+
+html body .rack-official-switch-hotzones {
+  z-index: 2 !important;
+  inset: 18% 8.5% 18% 8.5% !important;
+  grid-template-columns: minmax(0, 1fr) minmax(20px, 0.16fr) !important;
+  gap: 4px !important;
+}
+
+html body .rack-official-downlink-banks {
+  gap: 2px !important;
+}
+
+html body .rack-official-downlink-grid,
+html body .rack-official-uplink-grid,
+html body .rack-official-router-grid {
+  gap: 1px !important;
+}
+
+html body .rack-official-downlink-grid .port-button,
+html body .rack-official-uplink-grid .port-button,
+html body .rack-official-router-grid .port-button {
+  min-width: 0 !important;
+  min-height: 5px !important;
+  height: 7px !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 2px !important;
+  background: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  opacity: 0.08 !important;
+  box-shadow: none !important;
+}
+
+html body .rack-official-uplink-grid .port-button,
+html body .rack-official-router-grid .port-button {
+  min-height: 8px !important;
+  height: 9px !important;
+}
+
+html body .rack-official-cisco-face:hover .port-button,
+html body .cabinet-device.selected .rack-official-cisco-face .port-button,
+html body .rack-official-downlink-grid .port-button:hover,
+html body .rack-official-uplink-grid .port-button:hover,
+html body .rack-official-router-grid .port-button:hover {
+  opacity: 1 !important;
+  border-color: rgba(10, 132, 255, 0.86) !important;
+  background: rgba(10, 132, 255, 0.16) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.confirmed,
+html body .rack-official-uplink-grid .port-button.confirmed,
+html body .rack-official-router-grid .port-button.confirmed {
+  opacity: 0.58 !important;
+  border-color: rgba(52, 199, 89, 0.82) !important;
+  background: rgba(52, 199, 89, 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(52, 199, 89, 0.2) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.pending_verification,
+html body .rack-official-uplink-grid .port-button.pending_verification,
+html body .rack-official-router-grid .port-button.pending_verification {
+  opacity: 0.6 !important;
+  border-color: rgba(255, 204, 0, 0.86) !important;
+  background: rgba(255, 204, 0, 0.1) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.draft,
+html body .rack-official-uplink-grid .port-button.draft,
+html body .rack-official-router-grid .port-button.draft,
+html body .rack-official-downlink-grid .port-button.planned,
+html body .rack-official-uplink-grid .port-button.planned,
+html body .rack-official-router-grid .port-button.planned {
+  opacity: 0.52 !important;
+  border-color: rgba(10, 132, 255, 0.78) !important;
+  background: rgba(10, 132, 255, 0.08) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.faulty,
+html body .rack-official-uplink-grid .port-button.faulty,
+html body .rack-official-router-grid .port-button.faulty {
+  opacity: 0.78 !important;
+  border-color: rgba(255, 69, 58, 0.9) !important;
+  background: rgba(255, 69, 58, 0.12) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.retired,
+html body .rack-official-uplink-grid .port-button.retired,
+html body .rack-official-router-grid .port-button.retired {
+  opacity: 0.42 !important;
+  border-color: rgba(142, 142, 147, 0.72) !important;
+  background: rgba(142, 142, 147, 0.08) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.selected,
+html body .rack-official-uplink-grid .port-button.selected,
+html body .rack-official-router-grid .port-button.selected,
+html body .rack-official-downlink-grid .port-button.queued,
+html body .rack-official-uplink-grid .port-button.queued,
+html body .rack-official-router-grid .port-button.queued,
+html body .rack-official-downlink-grid .port-button.pending-start,
+html body .rack-official-uplink-grid .port-button.pending-start,
+html body .rack-official-router-grid .port-button.pending-start {
+  opacity: 1 !important;
+  border-color: rgba(10, 132, 255, 0.95) !important;
+  background: rgba(10, 132, 255, 0.2) !important;
+  outline: 1px solid rgba(255, 255, 255, 0.8) !important;
+  outline-offset: 1px !important;
+}
+
+@media (max-width: 760px) {
+  html body .workspace:not(.details-collapsed) .cabinet-overview,
+  html body .details-collapsed .cabinet-overview,
+  html body .cabinet-overview {
+    width: min(1120px, calc((var(--office-rack-count, 1) * 380px) + 32px)) !important;
+    min-width: min(1120px, calc((var(--office-rack-count, 1) * 340px) + 32px)) !important;
+  }
+
+  html body .cabinet-faces {
+    grid-template-columns: repeat(var(--office-rack-count, 1), minmax(330px, 1fr)) !important;
+  }
+
+  html body .cabinet-numbers,
+  html body .cabinet-bay {
+    grid-template-rows: repeat(var(--rack-units), 22px) !important;
+  }
+}
+
+body .workspace:not(.details-collapsed) .rack-device-faceplate.rack-official-cisco-face,
+body .rack-device-faceplate.rack-official-cisco-face {
+  position: relative !important;
+  min-height: 14px;
+  display: block !important;
+  grid-template-columns: none !important;
+  gap: 0 !important;
+  overflow: hidden;
+  padding: 0 !important;
+  border: 1px solid rgba(15, 23, 42, 0.68);
+  border-radius: 3px;
+  background: #f8fafc !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    0 1px 2px rgba(15, 23, 42, 0.16);
+}
+
+body .rack-official-cisco-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+body .rack-official-cisco-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.2), transparent 9%, transparent 91%, rgba(15, 23, 42, 0.18)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 35%, rgba(15, 23, 42, 0.1));
+}
+
+body .rack-official-switch-hotzones,
+body .rack-official-router-hotzones {
+  position: absolute;
+  z-index: 2;
+  min-width: 0;
+  pointer-events: none;
+}
+
+body .rack-official-switch-hotzones {
+  inset: 18% 7% 15% 7%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(22px, 0.18fr);
+  align-items: center;
+  gap: 3px;
+}
+
+body .rack-official-downlink-banks {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 2px;
+}
+
+body .rack-official-bank {
+  min-width: 0;
+}
+
+body .rack-official-router-hotzones {
+  inset: 20% 9% 16% 18%;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(18px, 1fr);
+  align-items: center;
+  gap: 4px;
+}
+
+body .rack-official-router-group {
+  min-width: 0;
+}
+
+body .rack-official-downlink-grid,
+body .rack-official-uplink-grid,
+body .rack-official-router-grid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--port-columns), minmax(5px, 1fr)) !important;
+  gap: 1px !important;
+  pointer-events: auto;
+}
+
+body .rack-official-uplink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(8px, 1fr)) !important;
+}
+
+body .rack-official-downlink-grid .port-button,
+body .rack-official-uplink-grid .port-button,
+body .rack-official-router-grid .port-button {
+  min-width: 0 !important;
+  min-height: 5px !important;
+  height: 7px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  border-radius: 2px !important;
+  background: rgba(15, 23, 42, 0.08) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  opacity: 0.5;
+  box-shadow: none !important;
+}
+
+body .rack-official-uplink-grid .port-button,
+body .rack-official-router-grid .port-button {
+  min-height: 8px !important;
+  height: 9px !important;
+}
+
+body .rack-official-downlink-grid .port-button:hover,
+body .rack-official-uplink-grid .port-button:hover,
+body .rack-official-router-grid .port-button:hover {
+  opacity: 1;
+  border-color: rgba(14, 165, 233, 0.88) !important;
+  background: rgba(14, 165, 233, 0.28) !important;
+}
+
+body .rack-official-downlink-grid .port-button.confirmed,
+body .rack-official-uplink-grid .port-button.confirmed,
+body .rack-official-router-grid .port-button.confirmed {
+  opacity: 0.95;
+  border-color: rgba(22, 163, 74, 0.95) !important;
+  background: rgba(34, 197, 94, 0.72) !important;
+}
+
+body .rack-official-downlink-grid .port-button.pending_verification,
+body .rack-official-uplink-grid .port-button.pending_verification,
+body .rack-official-router-grid .port-button.pending_verification {
+  opacity: 0.95;
+  border-color: rgba(217, 119, 6, 0.95) !important;
+  background: rgba(245, 158, 11, 0.72) !important;
+}
+
+body .rack-official-downlink-grid .port-button.draft,
+body .rack-official-uplink-grid .port-button.draft,
+body .rack-official-router-grid .port-button.draft,
+body .rack-official-downlink-grid .port-button.planned,
+body .rack-official-uplink-grid .port-button.planned,
+body .rack-official-router-grid .port-button.planned {
+  opacity: 0.95;
+  border-color: rgba(59, 130, 246, 0.95) !important;
+  background: rgba(96, 165, 250, 0.68) !important;
+}
+
+body .rack-official-downlink-grid .port-button.faulty,
+body .rack-official-uplink-grid .port-button.faulty,
+body .rack-official-router-grid .port-button.faulty {
+  opacity: 1;
+  border-color: rgba(220, 38, 38, 0.95) !important;
+  background: rgba(239, 68, 68, 0.74) !important;
+}
+
+body .rack-official-downlink-grid .port-button.retired,
+body .rack-official-uplink-grid .port-button.retired,
+body .rack-official-router-grid .port-button.retired {
+  opacity: 0.72;
+  border-color: rgba(100, 116, 139, 0.9) !important;
+  background: rgba(100, 116, 139, 0.58) !important;
+}
+
+body .rack-official-downlink-grid .port-button.selected,
+body .rack-official-uplink-grid .port-button.selected,
+body .rack-official-router-grid .port-button.selected,
+body .rack-official-downlink-grid .port-button.queued,
+body .rack-official-uplink-grid .port-button.queued,
+body .rack-official-router-grid .port-button.queued,
+body .rack-official-downlink-grid .port-button.pending-start,
+body .rack-official-uplink-grid .port-button.pending-start,
+body .rack-official-router-grid .port-button.pending-start {
+  opacity: 1;
+  outline: 1px solid var(--blue) !important;
+  outline-offset: 1px !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.rack-official-cisco-face {
+  background: #f8fafc !important;
+}
+
+/* Final-most rack realism layer. Keep at EOF so old overrides cannot flatten the hardware view. */
+html body .workspace:not(.details-collapsed) .cabinet-overview,
+html body .details-collapsed .cabinet-overview,
+html body .cabinet-overview {
+  width: min(1320px, calc((var(--office-rack-count, 1) * 420px) + 32px)) !important;
+  min-width: min(1320px, calc((var(--office-rack-count, 1) * 380px) + 32px)) !important;
+  border-color: rgba(198, 203, 212, 0.92) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 18px 46px rgba(29, 29, 31, 0.08) !important;
+}
+
+html body .cabinet-faces {
+  grid-template-columns: repeat(var(--office-rack-count, 1), minmax(360px, 1fr)) !important;
+  gap: 18px !important;
+}
+
+html body .cabinet-face {
+  padding: 12px !important;
+  border: 1px solid rgba(22, 24, 29, 0.95) !important;
+  border-radius: 10px !important;
+  background:
+    linear-gradient(90deg, #050609 0 8px, #2b2d31 8px 13px, transparent 13px calc(100% - 13px), #2b2d31 calc(100% - 13px) calc(100% - 8px), #050609 calc(100% - 8px)),
+    linear-gradient(180deg, #22252b, #090a0d 9%, #07080a 92%, #24272d) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 0, 0, 0.86), 0 16px 34px rgba(0, 0, 0, 0.18) !important;
+}
+
+html body .cabinet-face.active {
+  border-color: rgba(10, 132, 255, 0.88) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 0, 0, 0.86), 0 0 0 2px rgba(10, 132, 255, 0.36), 0 18px 42px rgba(10, 132, 255, 0.12) !important;
+}
+
+html body .cabinet-face-label {
+  min-height: 34px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(180deg, #44484f, #22262c 54%, #111419) !important;
+  color: #f5f7fb !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.55) !important;
+}
+
+html body .cabinet-grid {
+  grid-template-columns: 34px minmax(0, 1fr) 34px !important;
+  gap: 8px !important;
+}
+
+html body .cabinet-numbers,
+html body .cabinet-bay {
+  grid-template-rows: repeat(var(--rack-units), 23px) !important;
+}
+
+html body .cabinet-numbers {
+  color: #e3e6eb !important;
+  font-size: 9px !important;
+  text-shadow: 0 1px 0 #000 !important;
+}
+
+html body .cabinet-numbers span {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  background: linear-gradient(90deg, #050608, #1b1e24 45%, #090a0d) !important;
+}
+
+html body .cabinet-bay {
+  position: relative !important;
+  padding: 0 18px !important;
+  border: 3px solid #4c525b !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(90deg, #17191e 0 15px, transparent 15px calc(100% - 15px), #17191e calc(100% - 15px)),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.038) 0 1px, transparent 1px 23px),
+    linear-gradient(180deg, #0c0d10, #15171b 45%, #0a0b0d) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 12px 0 18px rgba(0, 0, 0, 0.44), inset -12px 0 18px rgba(0, 0, 0, 0.44) !important;
+  overflow: hidden !important;
+}
+
+html body .cabinet-bay::before,
+html body .cabinet-bay::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 1 !important;
+  top: 4px !important;
+  bottom: 4px !important;
+  width: 8px !important;
+  border-radius: 999px !important;
+  background: repeating-linear-gradient(180deg, transparent 0 5px, rgba(0, 0, 0, 0.72) 5px 10px, rgba(115, 121, 132, 0.5) 10px 12px, transparent 12px 23px) !important;
+  pointer-events: none !important;
+}
+
+html body .cabinet-bay::before {
+  left: 5px !important;
+}
+
+html body .cabinet-bay::after {
+  right: 5px !important;
+}
+
+html body .cabinet-u-line {
+  position: relative !important;
+  z-index: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+html body .cabinet-device {
+  z-index: 3 !important;
+  margin: 1px 7px !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08), 0 7px 14px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
+}
+
+html body .cabinet-device::before,
+html body .cabinet-device::after {
+  display: none !important;
+}
+
+html body .cabinet-device:hover,
+html body .cabinet-device.selected {
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.8), 0 0 0 5px rgba(10, 132, 255, 0.2), 0 10px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+html body .rack-device-faceplate,
+html body .workspace:not(.details-collapsed) .rack-device-faceplate {
+  position: relative !important;
+  height: 100% !important;
+  min-height: 20px !important;
+  display: grid !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 18px !important;
+  border: 1px solid rgba(34, 39, 48, 0.9) !important;
+  border-radius: 5px !important;
+  color: #0f172a !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.16)), linear-gradient(180deg, #e9eef4 0%, #b5c1cf 47%, #7e8b9b 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.28), inset 0 -7px 12px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+}
+
+html body .rack-device-faceplate.switch,
+html body .rack-device-faceplate.rack-embedded-switch {
+  grid-template-columns: 14px minmax(0, 1fr) 14px !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.23), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.16)), linear-gradient(180deg, #edf2f7, #b5c0cb 58%, #7b8794) !important;
+}
+
+html body .rack-device-faceplate.router {
+  grid-template-columns: 14px 34px minmax(0, 1fr) minmax(50px, 0.7fr) 14px !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 20%, transparent 80%, rgba(0, 0, 0, 0.18)), linear-gradient(180deg, #d9e1ea, #8997a8 48%, #4d5968) !important;
+}
+
+html body .rack-device-faceplate.server {
+  grid-template-columns: 14px minmax(72px, 1fr) 34px minmax(22px, 0.36fr) minmax(52px, 0.7fr) 14px !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.25)), linear-gradient(180deg, #3a3f47, #161a20 58%, #0b0d11) !important;
+}
+
+html body .rack-device-faceplate.patch,
+html body .rack-device-faceplate.panduit,
+html body .rack-patch-face {
+  grid-template-columns: 14px minmax(30px, 0.32fr) minmax(0, 1fr) 14px !important;
+  background: linear-gradient(180deg, #fff4cc, #e7d391 55%, #b79648) !important;
+}
+
+html body .rack-device-ear {
+  align-self: stretch !important;
+  min-width: 10px !important;
+  border: 1px solid rgba(22, 24, 29, 0.7) !important;
+  border-radius: 3px !important;
+  background: radial-gradient(circle at 50% 23%, #0b0c0f 0 2px, #747b86 2px 3px, transparent 3px), radial-gradient(circle at 50% 77%, #0b0c0f 0 2px, #747b86 2px 3px, transparent 3px), linear-gradient(180deg, #555b64, #272b32 52%, #111318) !important;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1), inset -1px 0 0 rgba(0, 0, 0, 0.42) !important;
+}
+
+html body .rack-embedded-cisco-panel {
+  height: 100% !important;
+  min-height: 18px !important;
+  grid-template-columns: 30px minmax(0, 1fr) minmax(30px, auto) !important;
+  gap: 4px !important;
+  padding: 2px 4px !important;
+  border: 1px solid rgba(55, 64, 78, 0.78) !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, #dfe7ef, #b3bfcc 54%, #818d9b) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.26) !important;
+}
+
+html body .rack-embedded-controls,
+html body .rack-physical-controls,
+html body .rack-server-control-stack {
+  height: 100% !important;
+  min-height: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 2px !important;
+  padding: 2px !important;
+  border: 1px solid rgba(0, 0, 0, 0.54) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #223045, #111824) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+html body .rack-mini-led {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 999px !important;
+  background: #35d07f !important;
+  box-shadow: 0 0 8px rgba(53, 208, 127, 0.8) !important;
+}
+
+html body .rack-control-port,
+html body .rack-control-slot {
+  width: 17px !important;
+  height: 7px !important;
+  border: 1px solid rgba(170, 183, 194, 0.5) !important;
+  border-radius: 2px !important;
+  background: #26313d !important;
+}
+
+html body .rack-control-port.small {
+  width: 12px !important;
+}
+
+html body .rack-embedded-mode {
+  max-width: 22px !important;
+  min-height: 8px !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-size: 4.8px !important;
+}
+
+html body .rack-embedded-bank {
+  min-height: 13px !important;
+  padding: 1px !important;
+  border-color: rgba(88, 98, 112, 0.68) !important;
+  border-radius: 3px !important;
+  background: repeating-linear-gradient(135deg, rgba(68, 84, 78, 0.18) 0 8px, transparent 8px 14px), linear-gradient(180deg, #f9fbf7, #d5ded9) !important;
+}
+
+html body .rack-embedded-downlink-grid,
+html body .rack-embedded-uplink-grid,
+html body .rack-patch-port-grid,
+html body .rack-server-nic-grid {
+  display: grid !important;
+  min-width: 0 !important;
+  gap: 1px !important;
+}
+
+html body .rack-embedded-downlink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(7px, 1fr)) !important;
+}
+
+html body .rack-embedded-uplink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(12px, 1fr)) !important;
+}
+
+html body .rack-patch-port-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(5px, 1fr)) !important;
+  grid-auto-rows: minmax(6px, 1fr) !important;
+  align-content: center !important;
+}
+
+html body .rack-server-nic-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(14px, 1fr)) !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button,
+html body .rack-embedded-uplink-grid .port-button,
+html body .rack-patch-port-grid .port-button,
+html body .rack-server-nic-grid .port-button {
+  min-width: 0 !important;
+  min-height: 6px !important;
+  height: 8px !important;
+  padding: 0 !important;
+  border-radius: 2px !important;
+  border-color: rgba(87, 96, 112, 0.8) !important;
+  background: #f8fafc !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+html body .rack-embedded-uplink-grid .port-button,
+html body .rack-server-nic-grid .port-button {
+  height: 12px !important;
+  min-height: 12px !important;
+}
+
+html body .rack-patch-port-grid .port-button {
+  height: 7px !important;
+  min-height: 7px !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.confirmed,
+html body .rack-embedded-uplink-grid .port-button.confirmed,
+html body .rack-patch-port-grid .port-button.confirmed,
+html body .rack-server-nic-grid .port-button.confirmed {
+  background: #c9f4d9 !important;
+  border-color: #34c759 !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.pending_verification,
+html body .rack-embedded-uplink-grid .port-button.pending_verification,
+html body .rack-patch-port-grid .port-button.pending_verification,
+html body .rack-server-nic-grid .port-button.pending_verification {
+  background: #fff1ba !important;
+  border-color: #ffcc00 !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.draft,
+html body .rack-embedded-uplink-grid .port-button.draft,
+html body .rack-patch-port-grid .port-button.draft,
+html body .rack-server-nic-grid .port-button.draft {
+  background: #dcecff !important;
+  border-color: #0a84ff !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.selected,
+html body .rack-embedded-uplink-grid .port-button.selected,
+html body .rack-patch-port-grid .port-button.selected,
+html body .rack-server-nic-grid .port-button.selected {
+  outline: 2px solid rgba(10, 132, 255, 0.9) !important;
+  outline-offset: 1px !important;
+}
+
+html body .rack-mini-router-groups {
+  height: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(22px, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 3px !important;
+}
+
+html body .rack-mini-router-groups span,
+html body .rack-generic-slots span {
+  min-height: 11px !important;
+  border: 1px solid rgba(31, 38, 50, 0.72) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #414956, #202631) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.36) !important;
+}
+
+html body .rack-device-vents {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(3px, 1fr)) !important;
+  gap: 2px !important;
+  align-items: center !important;
+}
+
+html body .rack-device-vents span {
+  height: 11px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #050608, #272b32 50%, #050608) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+html body .rack-generic-slots {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(12px, 1fr)) !important;
+  gap: 3px !important;
+}
+
+html body .rack-patch-label-strip {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 3px !important;
+}
+
+html body .rack-patch-label-strip span {
+  border: 1px solid rgba(143, 121, 60, 0.55) !important;
+  border-radius: 2px !important;
+  background: repeating-linear-gradient(90deg, rgba(120, 94, 39, 0.16) 0 7px, transparent 7px 13px), rgba(255, 255, 255, 0.46) !important;
+}
+
+html body .rack-server-drive-grid {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+}
+
+html body .rack-server-drive-grid span {
+  border: 1px solid rgba(152, 160, 172, 0.3) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 22%), linear-gradient(180deg, #272d36, #10141a) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] body .cabinet-overview {
+  border-color: rgba(247, 250, 255, 0.16) !important;
+  background: rgba(18, 22, 30, 0.86) !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.switch,
+html[data-theme="dark"] body .rack-device-faceplate.rack-embedded-switch {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.23), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.16)), linear-gradient(180deg, #dce4ed, #aeb8c4 58%, #7b8794) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.patch,
+html[data-theme="dark"] body .rack-device-faceplate.panduit,
+html[data-theme="dark"] body .rack-patch-face {
+  background: linear-gradient(180deg, #fff0b7, #d0b15d 55%, #8c6e30) !important;
+}
+
+/* Final rack realism layer: keep this after legacy visual overrides. */
+html body .workspace:not(.details-collapsed) .cabinet-overview,
+html body .details-collapsed .cabinet-overview,
+html body .cabinet-overview {
+  width: min(1320px, calc((var(--office-rack-count, 1) * 420px) + 32px)) !important;
+  min-width: min(1320px, calc((var(--office-rack-count, 1) * 380px) + 32px)) !important;
+  border-color: rgba(198, 203, 212, 0.92) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 18px 46px rgba(29, 29, 31, 0.08) !important;
+}
+
+html body .cabinet-faces {
+  grid-template-columns: repeat(var(--office-rack-count, 1), minmax(360px, 1fr)) !important;
+  gap: 18px !important;
+}
+
+html body .cabinet-face {
+  padding: 12px !important;
+  border: 1px solid rgba(22, 24, 29, 0.95) !important;
+  border-radius: 10px !important;
+  background:
+    linear-gradient(90deg, #050609 0 8px, #2b2d31 8px 13px, transparent 13px calc(100% - 13px), #2b2d31 calc(100% - 13px) calc(100% - 8px), #050609 calc(100% - 8px)),
+    linear-gradient(180deg, #22252b, #090a0d 9%, #07080a 92%, #24272d) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.86),
+    0 16px 34px rgba(0, 0, 0, 0.18) !important;
+}
+
+html body .cabinet-face.active {
+  border-color: rgba(10, 132, 255, 0.88) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.86),
+    0 0 0 2px rgba(10, 132, 255, 0.36),
+    0 18px 42px rgba(10, 132, 255, 0.12) !important;
+}
+
+html body .cabinet-face-label {
+  min-height: 34px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(180deg, #44484f, #22262c 54%, #111419) !important;
+  color: #f5f7fb !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55) !important;
+}
+
+html body .cabinet-grid {
+  grid-template-columns: 34px minmax(0, 1fr) 34px !important;
+  gap: 8px !important;
+}
+
+html body .cabinet-numbers,
+html body .cabinet-bay {
+  grid-template-rows: repeat(var(--rack-units), 23px) !important;
+}
+
+html body .cabinet-numbers {
+  color: #e3e6eb !important;
+  font-size: 9px !important;
+  text-shadow: 0 1px 0 #000 !important;
+}
+
+html body .cabinet-numbers span {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  background: linear-gradient(90deg, #050608, #1b1e24 45%, #090a0d) !important;
+}
+
+html body .cabinet-bay {
+  position: relative !important;
+  padding: 0 18px !important;
+  border: 3px solid #4c525b !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(90deg, #17191e 0 15px, transparent 15px calc(100% - 15px), #17191e calc(100% - 15px)),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.038) 0 1px, transparent 1px 23px),
+    linear-gradient(180deg, #0c0d10, #15171b 45%, #0a0b0d) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 12px 0 18px rgba(0, 0, 0, 0.44),
+    inset -12px 0 18px rgba(0, 0, 0, 0.44) !important;
+  overflow: hidden !important;
+}
+
+html body .cabinet-bay::before,
+html body .cabinet-bay::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 1 !important;
+  top: 4px !important;
+  bottom: 4px !important;
+  width: 8px !important;
+  border-radius: 999px !important;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 5px, rgba(0, 0, 0, 0.72) 5px 10px, rgba(115, 121, 132, 0.5) 10px 12px, transparent 12px 23px) !important;
+  pointer-events: none !important;
+}
+
+html body .cabinet-bay::before {
+  left: 5px !important;
+}
+
+html body .cabinet-bay::after {
+  right: 5px !important;
+}
+
+html body .cabinet-u-line {
+  position: relative !important;
+  z-index: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+html body .cabinet-device {
+  z-index: 3 !important;
+  margin: 1px 7px !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08), 0 7px 14px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
+}
+
+html body .cabinet-device::before,
+html body .cabinet-device::after {
+  display: none !important;
+}
+
+html body .cabinet-device:hover,
+html body .cabinet-device.selected {
+  box-shadow:
+    0 0 0 2px rgba(10, 132, 255, 0.8),
+    0 0 0 5px rgba(10, 132, 255, 0.2),
+    0 10px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+html body .rack-device-faceplate,
+html body .workspace:not(.details-collapsed) .rack-device-faceplate {
+  position: relative !important;
+  height: 100% !important;
+  min-height: 20px !important;
+  display: grid !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 18px !important;
+  border: 1px solid rgba(34, 39, 48, 0.9) !important;
+  border-radius: 5px !important;
+  color: #0f172a !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #e9eef4 0%, #b5c1cf 47%, #7e8b9b 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+}
+
+html body .rack-device-faceplate.switch,
+html body .rack-device-faceplate.rack-embedded-switch {
+  grid-template-columns: 14px minmax(0, 1fr) 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.23), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #edf2f7, #b5c0cb 58%, #7b8794) !important;
+}
+
+html body .rack-device-faceplate.router {
+  grid-template-columns: 14px 34px minmax(0, 1fr) minmax(50px, 0.7fr) 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 20%, transparent 80%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, #d9e1ea, #8997a8 48%, #4d5968) !important;
+}
+
+html body .rack-device-faceplate.server {
+  grid-template-columns: 14px minmax(72px, 1fr) 34px minmax(22px, 0.36fr) minmax(52px, 0.7fr) 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.25)),
+    linear-gradient(180deg, #3a3f47, #161a20 58%, #0b0d11) !important;
+}
+
+html body .rack-device-faceplate.patch,
+html body .rack-device-faceplate.panduit,
+html body .rack-patch-face {
+  grid-template-columns: 14px minmax(30px, 0.32fr) minmax(0, 1fr) 14px !important;
+  background: linear-gradient(180deg, #fff4cc, #e7d391 55%, #b79648) !important;
+}
+
+html body .rack-device-ear {
+  align-self: stretch !important;
+  min-width: 10px !important;
+  border: 1px solid rgba(22, 24, 29, 0.7) !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 50% 23%, #0b0c0f 0 2px, #747b86 2px 3px, transparent 3px),
+    radial-gradient(circle at 50% 77%, #0b0c0f 0 2px, #747b86 2px 3px, transparent 3px),
+    linear-gradient(180deg, #555b64, #272b32 52%, #111318) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.1),
+    inset -1px 0 0 rgba(0, 0, 0, 0.42) !important;
+}
+
+html body .rack-embedded-cisco-panel {
+  height: 100% !important;
+  min-height: 18px !important;
+  grid-template-columns: 30px minmax(0, 1fr) minmax(30px, auto) !important;
+  gap: 4px !important;
+  padding: 2px 4px !important;
+  border: 1px solid rgba(55, 64, 78, 0.78) !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, #dfe7ef, #b3bfcc 54%, #818d9b) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.26) !important;
+}
+
+html body .rack-embedded-controls,
+html body .rack-physical-controls,
+html body .rack-server-control-stack {
+  height: 100% !important;
+  min-height: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 2px !important;
+  padding: 2px !important;
+  border: 1px solid rgba(0, 0, 0, 0.54) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #223045, #111824) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+html body .rack-mini-led {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 999px !important;
+  background: #35d07f !important;
+  box-shadow: 0 0 8px rgba(53, 208, 127, 0.8) !important;
+}
+
+html body .rack-control-port,
+html body .rack-control-slot {
+  width: 17px !important;
+  height: 7px !important;
+  border: 1px solid rgba(170, 183, 194, 0.5) !important;
+  border-radius: 2px !important;
+  background: #26313d !important;
+}
+
+html body .rack-control-port.small {
+  width: 12px !important;
+}
+
+html body .rack-embedded-mode {
+  max-width: 22px !important;
+  min-height: 8px !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-size: 4.8px !important;
+}
+
+html body .rack-embedded-banks {
+  gap: 3px !important;
+}
+
+html body .rack-embedded-bank {
+  min-height: 13px !important;
+  padding: 1px !important;
+  border-color: rgba(88, 98, 112, 0.68) !important;
+  border-radius: 3px !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(68, 84, 78, 0.18) 0 8px, transparent 8px 14px),
+    linear-gradient(180deg, #f9fbf7, #d5ded9) !important;
+}
+
+html body .rack-embedded-downlink-grid,
+html body .rack-embedded-uplink-grid,
+html body .rack-patch-port-grid,
+html body .rack-server-nic-grid {
+  display: grid !important;
+  min-width: 0 !important;
+  gap: 1px !important;
+}
+
+html body .rack-embedded-downlink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(7px, 1fr)) !important;
+}
+
+html body .rack-embedded-uplink-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(12px, 1fr)) !important;
+}
+
+html body .rack-patch-port-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(5px, 1fr)) !important;
+  grid-auto-rows: minmax(6px, 1fr) !important;
+  align-content: center !important;
+}
+
+html body .rack-server-nic-grid {
+  grid-template-columns: repeat(var(--port-columns), minmax(14px, 1fr)) !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button,
+html body .rack-embedded-uplink-grid .port-button,
+html body .rack-patch-port-grid .port-button,
+html body .rack-server-nic-grid .port-button {
+  min-width: 0 !important;
+  min-height: 6px !important;
+  height: 8px !important;
+  padding: 0 !important;
+  border-radius: 2px !important;
+  border-color: rgba(87, 96, 112, 0.8) !important;
+  background: #f8fafc !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+html body .rack-embedded-uplink-grid .port-button,
+html body .rack-server-nic-grid .port-button {
+  height: 12px !important;
+  min-height: 12px !important;
+}
+
+html body .rack-patch-port-grid .port-button {
+  height: 7px !important;
+  min-height: 7px !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.confirmed,
+html body .rack-embedded-uplink-grid .port-button.confirmed,
+html body .rack-patch-port-grid .port-button.confirmed,
+html body .rack-server-nic-grid .port-button.confirmed {
+  background: #c9f4d9 !important;
+  border-color: #34c759 !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.pending_verification,
+html body .rack-embedded-uplink-grid .port-button.pending_verification,
+html body .rack-patch-port-grid .port-button.pending_verification,
+html body .rack-server-nic-grid .port-button.pending_verification {
+  background: #fff1ba !important;
+  border-color: #ffcc00 !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.draft,
+html body .rack-embedded-uplink-grid .port-button.draft,
+html body .rack-patch-port-grid .port-button.draft,
+html body .rack-server-nic-grid .port-button.draft {
+  background: #dcecff !important;
+  border-color: #0a84ff !important;
+}
+
+html body .rack-embedded-downlink-grid .port-button.selected,
+html body .rack-embedded-uplink-grid .port-button.selected,
+html body .rack-patch-port-grid .port-button.selected,
+html body .rack-server-nic-grid .port-button.selected {
+  outline: 2px solid rgba(10, 132, 255, 0.9) !important;
+  outline-offset: 1px !important;
+}
+
+html body .rack-mini-router-groups {
+  height: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(22px, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 3px !important;
+}
+
+html body .rack-mini-router-groups span,
+html body .rack-generic-slots span {
+  min-height: 11px !important;
+  border: 1px solid rgba(31, 38, 50, 0.72) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #414956, #202631) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.36) !important;
+}
+
+html body .rack-device-vents {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(3px, 1fr)) !important;
+  gap: 2px !important;
+  align-items: center !important;
+}
+
+html body .rack-device-vents span {
+  height: 11px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #050608, #272b32 50%, #050608) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+html body .rack-generic-slots {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(12px, 1fr)) !important;
+  gap: 3px !important;
+}
+
+html body .rack-patch-label-strip {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 3px !important;
+}
+
+html body .rack-patch-label-strip span {
+  border: 1px solid rgba(143, 121, 60, 0.55) !important;
+  border-radius: 2px !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(120, 94, 39, 0.16) 0 7px, transparent 7px 13px),
+    rgba(255, 255, 255, 0.46) !important;
+}
+
+html body .rack-server-drive-grid {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+}
+
+html body .rack-server-drive-grid span {
+  border: 1px solid rgba(152, 160, 172, 0.3) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 22%),
+    linear-gradient(180deg, #272d36, #10141a) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] body .cabinet-overview {
+  border-color: rgba(247, 250, 255, 0.16) !important;
+  background: rgba(18, 22, 30, 0.86) !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.switch,
+html[data-theme="dark"] body .rack-device-faceplate.rack-embedded-switch {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.23), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #dce4ed, #aeb8c4 58%, #7b8794) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="dark"] body .rack-device-faceplate.patch,
+html[data-theme="dark"] body .rack-device-faceplate.panduit,
+html[data-theme="dark"] body .rack-patch-face {
+  background: linear-gradient(180deg, #fff0b7, #d0b15d 55%, #8c6e30) !important;
 }
 
 /* Final office rack overview sizing: compact one-to-three rack views. */
@@ -6435,6 +8786,141 @@ html[data-theme="dark"] body .rack-embedded-bank {
   border-color: rgba(247, 250, 255, 0.24);
   background:
     linear-gradient(180deg, #edf2ef, #bdc9c3);
+}
+
+/* Last-mile Cisco rack reality overrides. Keep immediately before responsive rules. */
+html body .workspace:not(.details-collapsed) .cabinet-overview,
+html body .details-collapsed .cabinet-overview,
+html body .cabinet-overview {
+  width: min(1320px, calc((var(--office-rack-count, 1) * 430px) + 32px)) !important;
+  min-width: min(1320px, calc((var(--office-rack-count, 1) * 390px) + 32px)) !important;
+}
+
+html body .cabinet-faces {
+  grid-template-columns: repeat(var(--office-rack-count, 1), minmax(370px, 1fr)) !important;
+}
+
+html body .cabinet-numbers,
+html body .cabinet-bay {
+  grid-template-rows: repeat(var(--rack-units), 24px) !important;
+}
+
+html body .cabinet-device {
+  margin: 1px 8px !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face,
+html body .workspace:not(.details-collapsed) .rack-device-faceplate.rack-official-cisco-face {
+  position: relative !important;
+  min-height: 22px !important;
+  display: block !important;
+  padding: 2px 17px !important;
+  border: 1px solid rgba(8, 11, 16, 0.92) !important;
+  border-radius: 4px !important;
+  background:
+    linear-gradient(90deg, #15181d 0 14px, transparent 14px calc(100% - 14px), #15181d calc(100% - 14px)),
+    linear-gradient(180deg, #f0f3f6 0%, #c1cad4 48%, #7d8794 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 7px 14px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::before,
+html body .rack-device-faceplate.rack-official-cisco-face::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 3 !important;
+  top: 2px !important;
+  bottom: 2px !important;
+  width: 13px !important;
+  border: 1px solid rgba(4, 6, 10, 0.68) !important;
+  border-radius: 3px !important;
+  background:
+    radial-gradient(circle at 50% 25%, #020305 0 2px, #8b939f 2px 3px, transparent 3px),
+    radial-gradient(circle at 50% 75%, #020305 0 2px, #8b939f 2px 3px, transparent 3px),
+    linear-gradient(180deg, #5c636d, #252a31 54%, #0d1014) !important;
+  pointer-events: none !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::before {
+  left: 2px !important;
+}
+
+html body .rack-device-faceplate.rack-official-cisco-face::after {
+  right: 2px !important;
+}
+
+html body .rack-official-cisco-image-frame {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 2px 16px !important;
+  display: block !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(72, 80, 92, 0.72) !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, #e8edf2 0%, #c4ccd6 54%, #929ca8 100%) !important;
+}
+
+html body .rack-official-cisco-image {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+  object-position: center !important;
+  transform: none !important;
+  transform-origin: center !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.08) saturate(0.96) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+html body .rack-official-cisco-shade {
+  z-index: 1 !important;
+  inset: 2px 16px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 7%, transparent 93%, rgba(0, 0, 0, 0.18)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 45%, rgba(0, 0, 0, 0.12)) !important;
+}
+
+html body .rack-official-switch-hotzones {
+  z-index: 2 !important;
+  inset: 18% 8.5% 18% 8.5% !important;
+  grid-template-columns: minmax(0, 1fr) minmax(20px, 0.16fr) !important;
+  gap: 4px !important;
+}
+
+html body .rack-official-downlink-grid .port-button,
+html body .rack-official-uplink-grid .port-button,
+html body .rack-official-router-grid .port-button {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: transparent !important;
+  opacity: 0.08 !important;
+  box-shadow: none !important;
+}
+
+html body .rack-official-cisco-face:hover .port-button,
+html body .cabinet-device.selected .rack-official-cisco-face .port-button,
+html body .rack-official-downlink-grid .port-button:hover,
+html body .rack-official-uplink-grid .port-button:hover,
+html body .rack-official-router-grid .port-button:hover {
+  opacity: 1 !important;
+  border-color: rgba(10, 132, 255, 0.86) !important;
+  background: rgba(10, 132, 255, 0.16) !important;
+}
+
+html body .rack-official-downlink-grid .port-button.confirmed,
+html body .rack-official-uplink-grid .port-button.confirmed,
+html body .rack-official-router-grid .port-button.confirmed {
+  opacity: 0.58 !important;
+  border-color: rgba(52, 199, 89, 0.82) !important;
+  background: rgba(52, 199, 89, 0.08) !important;
 }
 
 @media (max-width: 1180px) {

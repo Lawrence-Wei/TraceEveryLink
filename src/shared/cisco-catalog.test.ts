@@ -23,6 +23,12 @@ describe("cisco catalog", () => {
     expect(getCiscoDeviceTemplate({ vendor: "Cisco", model: "WS-C3750E-48TD-S", name: "Distribution switch" })?.sku).toBe(
       "WS-C3750E-48TD-S"
     );
+    expect(getCiscoDeviceTemplate({ vendor: "Cisco", model: "WS-C3750G-48TS-S", name: "PIR core" })?.sku).toBe(
+      "WS-C3750G-48TS-S"
+    );
+    expect(getCiscoDeviceTemplate({ vendor: "Cisco", model: "WS-C3750-48PS-S", name: "PIR core" })?.sku).toBe(
+      "WS-C3750-48PS-S"
+    );
     expect(getCiscoDeviceTemplate({ vendor: "Cisco", model: "WS-C3560-48PS-S", name: "PoE access" })?.sku).toBe(
       "WS-C3560-48PS-S"
     );
@@ -39,6 +45,9 @@ describe("cisco catalog", () => {
   });
 
   it("matches supported Cisco router templates", () => {
+    expect(getCiscoDeviceTemplate({ vendor: "Cisco", model: "CISCO1911/K9", name: "PIR lab router" })?.sku).toBe(
+      "CISCO1911/K9"
+    );
     expect(getCiscoDeviceTemplate({ vendor: "Cisco", model: "CISCO1941/K9", name: "Cisco 1900 Series" })?.sku).toBe(
       "CISCO1941/K9"
     );

@@ -93,6 +93,29 @@ async function main() {
     }
   });
 
+  const pirLabRack = await prisma.rack.upsert({
+    where: { code: "PIR-LAB-R01" },
+    update: {
+      name: "Pirelli Office Lab Rack",
+      room: "LAB-PIR",
+      heightU: 42,
+      row: "LAB",
+      position: "01"
+    },
+    create: {
+      code: "PIR-LAB-R01",
+      name: "Pirelli Office Lab Rack",
+      room: "LAB-PIR",
+      heightU: 42,
+      row: "LAB",
+      position: "01"
+    }
+  });
+
+  await removeSeedDevice("C3650-ACCESS-03", ["CBL-R01-C3650-GI1-1-1-PANDUIT-P03"]);
+  await removeSeedDevice("PIR-LAB-DIST77.3", ["CBL-PIR-CORE77-2-DIST77-3"]);
+  await removeSeedDevice("PIR-LAB-DIST77.4", ["CBL-PIR-CORE77-2-DIST77-4"]);
+
   const panduitRear = await upsertDevice("PANDUIT-R01-REAR-01", {
     rackId: rack.id,
     vendor: "Panduit",
@@ -124,17 +147,6 @@ async function main() {
     uHeight: 1,
     mgmtIp: "10.10.10.12",
     notes: "Cisco Catalyst 2960 48-port Fast Ethernet switch with two Gigabit uplinks."
-  });
-
-  const c3650 = await upsertDevice("C3650-ACCESS-03", {
-    rackId: rack.id,
-    vendor: "Cisco",
-    model: "WS-C3650-48PS-S",
-    type: DeviceType.CISCO_CATALYST,
-    uPosition: 32,
-    uHeight: 1,
-    mgmtIp: "10.10.10.13",
-    notes: "Cisco Catalyst 3650 48-port Gigabit PoE+ access switch."
   });
 
   const c3750e = await upsertDevice("C3750E-ACCESS-04", {
@@ -302,6 +314,94 @@ async function main() {
     notes: "From site photo: Catalyst 3750-X Series switch with network module."
   });
 
+  const pirGateway = await upsertDevice("PIR-LAB-GW77.1", {
+    vendor: "iStoreOS",
+    model: "iStoreOS router",
+    type: DeviceType.FIREWALL,
+    mgmtIp: "192.168.77.1",
+    notes:
+      "Pirelli office lab gateway. WAN sits under the existing 192.168.10.0/23 office network; LAN is VLAN 77 at 192.168.77.1. DHCP should be limited to client ranges and excluded from static infrastructure IPs."
+  });
+
+  const pirCore = await upsertDevice("PIR-LAB-CORE77.2", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "WS-C3750G-48TS-S",
+    type: DeviceType.CISCO_CATALYST,
+    uPosition: 42,
+    uHeight: 1,
+    mgmtIp: "192.168.77.2",
+    notes:
+      "Pirelli office lab core switch. Exact 3750 SKU should be confirmed from the chassis label; represented as 3750G 48-port Gigabit for the initial lab topology."
+  });
+
+  const pirAcc2960X1 = await upsertDevice("PIR-LAB-ACC77.5", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "WS-C2960X-48FPS-L",
+    type: DeviceType.CISCO_CATALYST,
+    uPosition: 39,
+    uHeight: 1,
+    mgmtIp: "192.168.77.5",
+    notes: "Pirelli office lab access switch 1: Catalyst 2960-X for endpoints, phones, and access VLAN testing."
+  });
+
+  const pirAcc2960X2 = await upsertDevice("PIR-LAB-ACC77.6", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "WS-C2960X-48FPS-L",
+    type: DeviceType.CISCO_CATALYST,
+    uPosition: 38,
+    uHeight: 1,
+    mgmtIp: "192.168.77.6",
+    notes: "Pirelli office lab access switch 2: Catalyst 2960-X for spare access and trunk experiments."
+  });
+
+  const pirRtr1911 = await upsertDevice("PIR-LAB-RTR77.11", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "CISCO1911/K9",
+    type: DeviceType.OTHER,
+    uPosition: 36,
+    uHeight: 1,
+    mgmtIp: "192.168.77.11",
+    notes:
+      "Pirelli office lab router. Entered as Cisco 1911 per inventory notes; confirm chassis SKU if it is a 1900-series variant."
+  });
+
+  const pirRtr2811 = await upsertDevice("PIR-LAB-RTR77.12", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "CISCO2811/K9",
+    type: DeviceType.OTHER,
+    uPosition: 35,
+    uHeight: 1,
+    mgmtIp: "192.168.77.12",
+    notes: "Pirelli office lab router: Cisco 2811 for routed-network experiments."
+  });
+
+  const pirVgw2811 = await upsertDevice("PIR-LAB-VGW77.13", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "CISCO2811/K9",
+    type: DeviceType.OTHER,
+    uPosition: 34,
+    uHeight: 1,
+    mgmtIp: "192.168.77.13",
+    notes: "Pirelli office lab voice gateway candidate: Cisco 2811 for CUCM, SRST, FXO/FXS, or SIP gateway testing."
+  });
+
+  const pirCucm = await upsertDevice("PIR-LAB-CUCM77.20", {
+    rackId: pirLabRack.id,
+    vendor: "Cisco",
+    model: "CUCM 7.4",
+    type: DeviceType.SERVER,
+    uPosition: 31,
+    uHeight: 2,
+    mgmtIp: "192.168.77.20",
+    notes: "Pirelli office lab Cisco Unified Communications Manager 7.4 server."
+  });
+
   const panel = await upsertDevice("PP-R01-01", {
     rackId: rack.id,
     vendor: "Panduit",
@@ -377,28 +477,6 @@ async function main() {
       speed: "1G",
       poeEnabled: false,
       stack: 0,
-      module: 1,
-      portNumber: i
-    });
-  }
-
-  for (let i = 1; i <= 48; i += 1) {
-    await upsertPort(c3650.id, `Gi1/0/${i}`, {
-      label: `GigabitEthernet1/0/${i}`,
-      type: PortType.RJ45,
-      speed: "1G",
-      poeEnabled: true,
-      stack: 1,
-      module: 0,
-      portNumber: i
-    });
-  }
-  for (let i = 1; i <= 4; i += 1) {
-    await upsertPort(c3650.id, `Gi1/1/${i}`, {
-      label: `GigabitEthernet1/1/${i}`,
-      type: PortType.SFP,
-      speed: "1G",
-      stack: 1,
       module: 1,
       portNumber: i
     });
@@ -641,6 +719,88 @@ async function main() {
     });
   }
 
+  await upsertPort(pirGateway.id, "lan1", {
+    label: "LAN to PIR lab core",
+    type: PortType.RJ45,
+    speed: "1G",
+    portNumber: 1
+  });
+  await upsertPort(pirGateway.id, "wan", {
+    label: "WAN / upstream",
+    type: PortType.RJ45,
+    speed: "1G",
+    portNumber: 2
+  });
+
+  for (let i = 1; i <= 52; i += 1) {
+    await upsertPort(pirCore.id, `Gi1/0/${i}`, {
+      label: `GigabitEthernet1/0/${i}${i > 48 ? " SFP" : ""}`,
+      type: i <= 48 ? PortType.RJ45 : PortType.SFP,
+      speed: "1G",
+      poeEnabled: false,
+      stack: 1,
+      module: i <= 48 ? 0 : 1,
+      portNumber: i
+    });
+  }
+
+  for (const accessSwitch of [pirAcc2960X1, pirAcc2960X2]) {
+    for (let i = 1; i <= 52; i += 1) {
+      await upsertPort(accessSwitch.id, `Gi1/0/${i}`, {
+        label: `GigabitEthernet1/0/${i}${i > 48 ? " SFP" : ""}`,
+        type: i <= 48 ? PortType.RJ45 : PortType.SFP,
+        speed: "1G",
+        poeEnabled: i <= 48,
+        stack: 1,
+        module: i <= 48 ? 0 : 1,
+        portNumber: i
+      });
+    }
+  }
+
+  for (let i = 0; i <= 1; i += 1) {
+    await upsertPort(pirRtr1911.id, `Gi0/${i}`, {
+      label: `GigabitEthernet0/${i}`,
+      type: PortType.RJ45,
+      speed: "1G",
+      stack: 0,
+      module: 0,
+      portNumber: i
+    });
+  }
+
+  for (const router of [pirRtr2811, pirVgw2811]) {
+    for (let i = 0; i <= 1; i += 1) {
+      await upsertPort(router.id, `Fa0/${i}`, {
+        label: `FastEthernet0/${i}`,
+        type: PortType.RJ45,
+        speed: "100M",
+        stack: 0,
+        module: 0,
+        portNumber: i
+      });
+    }
+  }
+
+  await upsertPort(pirCucm.id, "mgmt0", {
+    label: "Management",
+    type: PortType.RJ45,
+    speed: "1G",
+    portNumber: 0
+  });
+  await upsertPort(pirCucm.id, "eth0", {
+    label: "CUCM LAN 0",
+    type: PortType.RJ45,
+    speed: "1G",
+    portNumber: 1
+  });
+  await upsertPort(pirCucm.id, "eth1", {
+    label: "CUCM LAN 1",
+    type: PortType.RJ45,
+    speed: "1G",
+    portNumber: 2
+  });
+
   const panduitRearPorts = [];
   for (let i = 1; i <= 48; i += 1) {
     panduitRearPorts.push(
@@ -736,13 +896,6 @@ async function main() {
     { status: CableStatus.confirmed, color: "blue", lengthM: 1.5 }
   );
   await upsertCable(
-    "CBL-R01-C3650-GI1-1-1-PANDUIT-P03",
-    "C3650-ACCESS-03 Gi1/1/1 -> Panduit rear P03",
-    (await requirePort(c3650.id, "Gi1/1/1")).id,
-    panduitRearPorts[2].id,
-    { status: CableStatus.confirmed, color: "blue", lengthM: 1.5 }
-  );
-  await upsertCable(
     "CBL-R01-C3750E-TE1-1-1-PANDUIT-P04",
     "C3750E-ACCESS-04 Te1/1/1 -> Panduit rear P04",
     (await requirePort(c3750e.id, "Te1/1/1")).id,
@@ -785,13 +938,63 @@ async function main() {
     { status: CableStatus.confirmed, color: "aqua", lengthM: 1.5 }
   );
 
+  await upsertCable(
+    "CBL-PIR-GW77-1-CORE77-2",
+    "PIR-LAB-GW77.1 lan1 -> PIR-LAB-CORE77.2 Gi1/0/48",
+    (await requirePort(pirGateway.id, "lan1")).id,
+    (await requirePort(pirCore.id, "Gi1/0/48")).id,
+    { status: CableStatus.planned, color: "blue", lengthM: 2 }
+  );
+  await upsertCable(
+    "CBL-PIR-CORE77-2-ACC77-5",
+    "PIR-LAB-CORE77.2 Gi1/0/51 -> PIR-LAB-ACC77.5 Gi1/0/49",
+    (await requirePort(pirCore.id, "Gi1/0/51")).id,
+    (await requirePort(pirAcc2960X1.id, "Gi1/0/49")).id,
+    { status: CableStatus.planned, media: CableMedia.FIBER, color: "aqua", lengthM: 2 }
+  );
+  await upsertCable(
+    "CBL-PIR-CORE77-2-ACC77-6",
+    "PIR-LAB-CORE77.2 Gi1/0/52 -> PIR-LAB-ACC77.6 Gi1/0/49",
+    (await requirePort(pirCore.id, "Gi1/0/52")).id,
+    (await requirePort(pirAcc2960X2.id, "Gi1/0/49")).id,
+    { status: CableStatus.planned, media: CableMedia.FIBER, color: "aqua", lengthM: 2 }
+  );
+  await upsertCable(
+    "CBL-PIR-CORE77-2-RTR77-11",
+    "PIR-LAB-CORE77.2 Gi1/0/11 -> PIR-LAB-RTR77.11 Gi0/0",
+    (await requirePort(pirCore.id, "Gi1/0/11")).id,
+    (await requirePort(pirRtr1911.id, "Gi0/0")).id,
+    { status: CableStatus.planned, color: "yellow", lengthM: 2 }
+  );
+  await upsertCable(
+    "CBL-PIR-CORE77-2-RTR77-12",
+    "PIR-LAB-CORE77.2 Gi1/0/12 -> PIR-LAB-RTR77.12 Fa0/0",
+    (await requirePort(pirCore.id, "Gi1/0/12")).id,
+    (await requirePort(pirRtr2811.id, "Fa0/0")).id,
+    { status: CableStatus.planned, color: "yellow", lengthM: 2 }
+  );
+  await upsertCable(
+    "CBL-PIR-CORE77-2-VGW77-13",
+    "PIR-LAB-CORE77.2 Gi1/0/13 -> PIR-LAB-VGW77.13 Fa0/0",
+    (await requirePort(pirCore.id, "Gi1/0/13")).id,
+    (await requirePort(pirVgw2811.id, "Fa0/0")).id,
+    { status: CableStatus.planned, color: "yellow", lengthM: 2 }
+  );
+  await upsertCable(
+    "CBL-PIR-CORE77-2-CUCM77-20",
+    "PIR-LAB-CORE77.2 Gi1/0/20 -> PIR-LAB-CUCM77.20 eth0",
+    (await requirePort(pirCore.id, "Gi1/0/20")).id,
+    (await requirePort(pirCucm.id, "eth0")).id,
+    { status: CableStatus.planned, color: "purple", lengthM: 2 }
+  );
+
   await prisma.auditLog.create({
     data: {
       actorId: admin.id,
       action: "seed",
       entityType: "system",
       entityId: "bootstrap",
-      newValue: { message: "Seeded demo rack, Panduit rear field, ports, and cables." }
+      newValue: { message: "Seeded demo rack, Panduit rear field, ports, cables, and Pirelli office lab plan." }
     }
   });
 
@@ -827,6 +1030,27 @@ async function upsertDevice(
     return prisma.device.update({ where: { id: existing.id }, data: data as Prisma.DeviceUncheckedUpdateInput });
   }
   return prisma.device.create({ data: { name, ...data } });
+}
+
+async function removeSeedDevice(name: string, cableIds: string[]) {
+  await prisma.cable.deleteMany({ where: { cableId: { in: cableIds } } });
+
+  const device = await prisma.device.findFirst({
+    where: { name },
+    include: {
+      ports: {
+        select: {
+          cableA: { select: { id: true }, take: 1 },
+          cableB: { select: { id: true }, take: 1 }
+        }
+      }
+    }
+  });
+
+  if (!device) return;
+  const hasRemainingCables = device.ports.some((port) => port.cableA.length > 0 || port.cableB.length > 0);
+  if (hasRemainingCables) return;
+  await prisma.device.delete({ where: { id: device.id } });
 }
 
 async function upsertPort(

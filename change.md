@@ -2,6 +2,38 @@
 
 This file records product, UI, data-model, deployment, and documentation changes made during the current TraceEveryLink build-out.
 
+## 2026-06-19
+
+### Workbench Map And Cable Creation UX
+
+- Kept the global WAN map pinned inside the center workbench viewport instead of requiring vertical scrolling.
+- Moved the overview map ahead of the navigator on narrow screens so the map remains the first workbench surface.
+- Added Google Maps-style WAN map zoom controls, mouse-wheel zoom, double-click zoom, and drag-to-pan behavior after zooming.
+- Split overview map interaction from rack-canvas pan behavior so rack wheel/pan controls only apply inside site rack workspaces.
+- Reworked the right inspector's New Cable flow into a dedicated create state with grouped cable details, endpoint selectors, color swatches, and sticky Save/Cancel actions.
+- Added English and Chinese i18n copy for map zoom controls, New Cable form grouping, generated cable ID helper text, and color swatches.
+
+## 2026-06-18
+
+### Pirelli Office Lab Onboarding
+
+- Added Cisco catalog support for the Pirelli lab's Cisco 1911 and Catalyst 3750/3750G onboarding models.
+- Added `PIR-LAB-R01` seed inventory with the agreed `PIR-LAB-...77.x` naming convention, management IPs, rack placement, ports, and planned uplinks.
+- Seeded the iStoreOS gateway, 3750 core, two 2960-X access switches, 1911/2811 routers, 2811 voice gateway candidate, and CUCM 7.4 server.
+- Added `docs/pirelli-lab-network-plan.md` with VLAN 77 management, future VLANs, planned physical links, and TraceEveryLink onboarding order.
+- Updated the lab network plan to treat `192.168.10.0/23` as the already-used upstream office network and to avoid the previous `192.168.50.0/24` range.
+- Removed the older 3560G/3560 distribution switches from the active Pirelli lab seed, documentation, and Excel patch plan while keeping Cisco catalog recognition available.
+- Added Markdown and HTML troubleshooting notes for bringing the C3750X management SSH address `192.168.77.2/24` online through `Vlan12`, including the command history, validation steps, and the VLAN 1 vs VLAN 12 explanation.
+- Added Markdown and HTML C3750X IOS upgrade tutorial covering Ubuntu TFTP preparation, copying `c3750e-universalk9-mz.152-4.E10.bin` into switch flash, MD5 validation, boot variable changes, reload verification, and rollback.
+
+### Cisco Official Device Imagery
+
+- Replaced in-rack Cisco switch faceplates with Cisco-hosted official front-panel imagery only when the catalog image is a usable front view.
+- Added a locked-down `/api/cisco-official-image` proxy that only serves allowlisted Cisco catalog images and passes the matching Cisco source page as the upstream referer.
+- Kept port interaction by layering transparent port hit zones over official Cisco front-panel images, with cable statuses reduced to subtle outlines so they do not cover the equipment.
+- Added Cisco image view metadata so rear, I/O-side, and product photos remain available in the details reference panel without being forced into the front rack view.
+- Widened and slightly raised the rack overview scale so 1U Cisco front panels read as equipment instead of compressed web thumbnails.
+
 ## 2026-06-17
 
 ### Rackula Device Type Library
@@ -170,9 +202,17 @@ This file records product, UI, data-model, deployment, and documentation changes
 - The WAN world map now appears on the overview/home view only.
 - Selecting a site from the map or left navigator enters the site workspace and hides the world map.
 - Added a top-left brand/home control to return from a site workspace to the global WAN map.
+- Added explicit Global Map entry points in the left navigator and rack toolbar so the world map is discoverable after entering a site.
 - Kept the global map home neutral, with global summary copy instead of carrying an active site selection into the overview.
 - Kept the left navigator in topology order on the global home and changed the cable empty state to prompt site selection.
 - Site pages with no imported rack now show only the empty-site state instead of repeating the global map.
+
+### Realistic Rack Hardware View
+
+- Reworked rack-mounted device rendering so the rack view reads like physical equipment instead of flat inventory blocks.
+- Added visual rack rails, mounting holes, device mounting ears, screw heads, chassis depth, vents, drive bays, module slots, and status/control areas.
+- Rendered patch panels and Panduit fields with actual clickable port grids inside the rack-mounted faceplate.
+- Kept Cisco switch/router ports interactive while making the embedded faceplates look more like installed hardware.
 
 ### Pan, Wheel, And Selection Modes
 

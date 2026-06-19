@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TraceEveryLink Zabbix Showcase</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef3f7;
+      --panel: #ffffff;
+      --ink: #17212b;
+      --muted: #5d6b78;
+      --line: #d7e0e8;
+      --green: #2e7d32;
+      --red: #c62828;
+      --blue: #0b5f8a;
+      --amber: #a05a00;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    header {
+      background: #0f3446;
+      color: white;
+      padding: 28px clamp(20px, 4vw, 56px);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 52px);
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      color: #c6d7e1;
+      max-width: 900px;
+      font-size: 17px;
+    }
+
+    main {
+      width: min(1280px, calc(100vw - 32px));
+      margin: 24px auto 48px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card,
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(16, 32, 48, 0.04);
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric {
+      margin-top: 6px;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .metric.green {
+      color: var(--green);
+    }
+
+    .metric.red {
+      color: var(--red);
+    }
+
+    .metric.blue {
+      color: var(--blue);
+    }
+
+    .section {
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 23px;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: #0067a6;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #0067a6;
+      color: #004b78;
+      background: #f5fbff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .hero-shot {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      display: block;
+    }
+
+    .note {
+      color: var(--muted);
+      margin: 10px 0 0;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: #f7fafc;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .up,
+    .open {
+      color: #145a18;
+      background: #dff2df;
+    }
+
+    .down,
+    .closed {
+      color: #851b1b;
+      background: #f9dddd;
+    }
+
+    code {
+      background: #eef3f7;
+      border: 1px solid #d8e3ea;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      table {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 14px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TraceEveryLink Zabbix Showcase</h1>
+    <p>这台 Zabbix 已经从 SSH config 导入主机，并用 ICMP、SSH TCP 检查、触发器和实时网络地图展示链路状态。</p>
+  </header>
+
+  <main>
+    <section class="grid" aria-label="Summary">
+      <div class="card">
+        <div class="label">Zabbix URL</div>
+        <div class="metric blue">192.168.77.212</div>
+      </div>
+      <div class="card">
+        <div class="label">Imported endpoints</div>
+        <div class="metric blue">20</div>
+      </div>
+      <div class="card">
+        <div class="label">Ping up + SSH open</div>
+        <div class="metric green">15</div>
+      </div>
+      <div class="card">
+        <div class="label">Down / closed</div>
+        <div class="metric red">5</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Access</h2>
+      <p>
+        Web UI: <a href="http://192.168.77.212/zabbix/">http://192.168.77.212/zabbix/</a><br>
+        Login: <code>lawrence</code><br>
+        Password: <code>Wht199625!</code>
+      </p>
+      <div class="actions">
+        <a class="button" href="http://192.168.77.212/zabbix/zabbix.php?action=map.view&sysmapid=2">Open live topology map</a>
+        <a class="button" href="http://192.168.77.212/zabbix/zabbix.php?action=host.view">Open hosts view</a>
+        <a class="button" href="http://192.168.77.212/zabbix/zabbix.php?action=problem.view">Open problems view</a>
+      </div>
+      <p class="note">The password is included here because this is a local handoff file. Do not commit or publish this page.</p>
+    </section>
+
+    <section class="section">
+      <h2>Strongest Demo: Live Topology</h2>
+      <p>
+        Zabbix network maps can combine host status, trigger problems, and item-value link indicators.
+        In this map, green links mean the SSH TCP check is reachable; red links mean the endpoint is down or SSH is closed.
+      </p>
+      <img class="hero-shot" src="./zabbix-topology.png" alt="Zabbix live SSH topology map">
+      <p class="note">Map name: <code>TraceEveryLink Live SSH Topology</code>. Host group: <code>TraceEveryLink SSH Config</code>.</p>
+    </section>
+
+    <section class="section">
+      <h2>Current Endpoint Status</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Ping</th>
+            <th>SSH TCP</th>
+            <th>Check key</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>asus-router (192.168.100.154)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.100.154,22]</code></td></tr>
+          <tr><td>crs (crs.vlanrey.tech)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,crs.vlanrey.tech,22]</code></td></tr>
+          <tr><td>cu (39.107.68.30)</td><td><span class="pill down">down</span></td><td><span class="pill closed">closed</span></td><td><code>net.tcp.service[tcp,39.107.68.30,22]</code></td></tr>
+          <tr><td>ecs (8.153.161.113)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,8.153.161.113,22]</code></td></tr>
+          <tr><td>infra-docker (192.168.77.210)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.77.210,22]</code></td></tr>
+          <tr><td>lawpc (192.168.100.229)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.100.229,22]</code></td></tr>
+          <tr><td>luckfox (192.168.77.204)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.77.204,22]</code></td></tr>
+          <tr><td>macbook (192.168.66.200)</td><td><span class="pill down">down</span></td><td><span class="pill closed">closed</span></td><td><code>net.tcp.service[tcp,192.168.66.200,22]</code></td></tr>
+          <tr><td>nas (192.168.100.246)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.100.246,12222]</code></td></tr>
+          <tr><td>pi (192.168.77.197)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.77.197,22]</code></td></tr>
+          <tr><td>prgw (prgw.vlanrey.tech)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,prgw.vlanrey.tech,22]</code></td></tr>
+          <tr><td>prgw-lan (192.168.77.1)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.77.1,22]</code></td></tr>
+          <tr><td>pve (192.168.77.160)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.77.160,22]</code></td></tr>
+          <tr><td>shgw (shgw.vlanrey.tech)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,shgw.vlanrey.tech,22]</code></td></tr>
+          <tr><td>shgw-lan (192.168.100.1)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.100.1,22]</code></td></tr>
+          <tr><td>srv (192.168.77.234)</td><td><span class="pill down">down</span></td><td><span class="pill closed">closed</span></td><td><code>net.tcp.service[tcp,192.168.77.234,22]</code></td></tr>
+          <tr><td>switch (192.168.100.253)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,192.168.100.253,22]</code></td></tr>
+          <tr><td>ubuntu (192.168.77.188)</td><td><span class="pill down">down</span></td><td><span class="pill closed">closed</span></td><td><code>net.tcp.service[tcp,192.168.77.188,22]</code></td></tr>
+          <tr><td>win11 (192.168.66.234)</td><td><span class="pill down">down</span></td><td><span class="pill closed">closed</span></td><td><code>net.tcp.service[tcp,192.168.66.234,22]</code></td></tr>
+          <tr><td>wxgw (wxgw.vlanrey.tech)</td><td><span class="pill up">up</span></td><td><span class="pill open">open</span></td><td><code>net.tcp.service[tcp,wxgw.vlanrey.tech,22]</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>What To Show First</h2>
+      <p>
+        Start with the map, then click a red node or red SSH link to drill into the exact problem.
+        The powerful part is not the picture; it is that the picture is backed by live checks, triggers, history, and the same API used to generate it.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

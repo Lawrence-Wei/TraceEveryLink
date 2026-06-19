@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TraceEveryLink Prometheus + Grafana Showcase</title>
+  <style>
+    :root {
+      --bg: #0f141b;
+      --panel: #171c23;
+      --panel-soft: #202630;
+      --ink: #f4f7fb;
+      --muted: #9ba8b5;
+      --line: #2f3945;
+      --green: #5fb35b;
+      --red: #e05252;
+      --orange: #f2994a;
+      --blue: #7fb7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    header {
+      padding: 34px clamp(20px, 4vw, 60px);
+      background: #111820;
+      border-bottom: 1px solid var(--line);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 5vw, 52px);
+      letter-spacing: 0;
+    }
+
+    header p {
+      max-width: 980px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    main {
+      width: min(1280px, calc(100vw - 32px));
+      margin: 24px auto 48px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card,
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric {
+      margin-top: 8px;
+      font-size: 34px;
+      font-weight: 750;
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .red {
+      color: var(--red);
+    }
+
+    .blue {
+      color: var(--blue);
+    }
+
+    .orange {
+      color: var(--orange);
+    }
+
+    .section {
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 23px;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: #8ac5ff;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #3f88c5;
+      color: #d9eeff;
+      background: #16283a;
+      text-decoration: none;
+      font-weight: 650;
+    }
+
+    code {
+      background: #101820;
+      border: 1px solid #2d3a46;
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: #e7f2ff;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+
+    .shot {
+      width: 100%;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #111;
+    }
+
+    .note {
+      color: var(--muted);
+      margin: 10px 0 0;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--panel-soft);
+      color: #cbd5df;
+      font-weight: 650;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 62px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .up {
+      color: #dff7df;
+      background: #245d2b;
+    }
+
+    .down {
+      color: #ffe4e4;
+      background: #782525;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Prometheus + Grafana</h1>
+    <p>所有 SSH config endpoint 都进入 Prometheus blackbox 探测；可安装 exporter 的 Linux 主机进入 node_exporter 深度采集，并在 Grafana 中做成实时仪表盘。</p>
+  </header>
+
+  <main>
+    <section class="grid" aria-label="Summary">
+      <div class="card">
+        <div class="label">Grafana</div>
+        <div class="metric blue">192.168.77.213</div>
+      </div>
+      <div class="card">
+        <div class="label">SSH endpoints reachable</div>
+        <div class="metric green">15</div>
+      </div>
+      <div class="card">
+        <div class="label">SSH endpoints down</div>
+        <div class="metric red">5</div>
+      </div>
+      <div class="card">
+        <div class="label">Node exporters up</div>
+        <div class="metric green">7</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Access</h2>
+      <p>
+        Grafana: <a href="http://192.168.77.213:3000/">http://192.168.77.213:3000/</a><br>
+        Prometheus: <a href="http://192.168.77.213:9090/">http://192.168.77.213:9090/</a><br>
+        Login: <code>lawrence</code><br>
+        Password: <code>Wht199625!</code>
+      </p>
+      <div class="actions">
+        <a class="button" href="http://192.168.77.213:3000/d/traceeverylink-prometheus/traceeverylink-prometheus-overview">Open Grafana dashboard</a>
+        <a class="button" href="http://192.168.77.213:9090/targets">Open Prometheus targets</a>
+        <a class="button" href="http://192.168.77.213:9090/alerts">Open Prometheus alerts</a>
+      </div>
+      <p class="note">This local handoff page contains credentials. Do not commit or publish it.</p>
+    </section>
+
+    <section class="section">
+      <h2>Live Dashboard</h2>
+      <img class="shot" src="./grafana-prometheus-overview.png" alt="TraceEveryLink Prometheus Grafana dashboard">
+      <p class="note">Dashboard UID: <code>traceeverylink-prometheus</code>. Data source UID: <code>prometheus-main</code>.</p>
+    </section>
+
+    <section class="section">
+      <h2>Deep Metrics Hosts</h2>
+      <table>
+        <thead>
+          <tr><th>Alias</th><th>Site</th><th>Exporter endpoint</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>crs</td><td>public</td><td><code>crs.vlanrey.tech:9100</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>infra-docker</td><td>pr</td><td><code>192.168.77.210:9100</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>metrics</td><td>pr</td><td><code>192.168.77.213:9100</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>nas</td><td>shanghai</td><td><code>192.168.100.246:9100</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>pi</td><td>pr</td><td><code>192.168.77.197:9100</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>pve</td><td>pr</td><td><code>192.168.77.160:9100</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>zabbix</td><td>pr</td><td><code>192.168.77.212:9100</code></td><td><span class="pill up">up</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>SSH Endpoint Snapshot</h2>
+      <table>
+        <thead>
+          <tr><th>Alias</th><th>Site</th><th>Target</th><th>Prometheus blackbox</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>asus-router</td><td>shanghai</td><td><code>192.168.100.154:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>crs</td><td>public</td><td><code>crs.vlanrey.tech:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>cu</td><td>public</td><td><code>39.107.68.30:22</code></td><td><span class="pill down">down</span></td></tr>
+          <tr><td>ecs</td><td>public</td><td><code>8.153.161.113:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>infra-docker</td><td>pr</td><td><code>192.168.77.210:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>lawpc</td><td>shanghai</td><td><code>192.168.100.229:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>luckfox</td><td>pr</td><td><code>192.168.77.204:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>macbook</td><td>wx</td><td><code>192.168.66.200:22</code></td><td><span class="pill down">down</span></td></tr>
+          <tr><td>nas</td><td>shanghai</td><td><code>192.168.100.246:12222</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>pi</td><td>pr</td><td><code>192.168.77.197:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>prgw</td><td>pr</td><td><code>prgw.vlanrey.tech:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>prgw-lan</td><td>pr</td><td><code>192.168.77.1:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>pve</td><td>pr</td><td><code>192.168.77.160:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>shgw</td><td>shanghai</td><td><code>shgw.vlanrey.tech:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>shgw-lan</td><td>shanghai</td><td><code>192.168.100.1:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>srv</td><td>pr</td><td><code>192.168.77.234:22</code></td><td><span class="pill down">down</span></td></tr>
+          <tr><td>switch</td><td>shanghai</td><td><code>192.168.100.253:22</code></td><td><span class="pill up">up</span></td></tr>
+          <tr><td>ubuntu</td><td>pr</td><td><code>192.168.77.188:22</code></td><td><span class="pill down">down</span></td></tr>
+          <tr><td>win11</td><td>wx</td><td><code>192.168.66.234:22</code></td><td><span class="pill down">down</span></td></tr>
+          <tr><td>wxgw</td><td>wx</td><td><code>wxgw.vlanrey.tech:22</code></td><td><span class="pill up">up</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

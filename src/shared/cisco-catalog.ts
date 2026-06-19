@@ -25,6 +25,13 @@ export type CiscoDeviceTemplate = {
   sourceUrl: string;
   officialImageUrl?: string;
   officialImageAlt?: string;
+  officialImageSourceLabel?: string;
+  officialImageSourceUrl?: string;
+  officialImageKind?: "devicePhoto" | "hardwareGuide" | "hardwareView";
+  officialImageObjectPosition?: string;
+  officialImageRackView?: "front" | "rear" | "io" | "product";
+  officialImageRackScale?: number;
+  officialImageRackObjectPosition?: string;
   downlinkPorts: number;
   downlinkDescription: string;
   uplinkDescription: string;
@@ -34,14 +41,41 @@ export type CiscoDeviceTemplate = {
 
 export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
   {
+    sku: "CISCO1911/K9",
+    aliases: ["CISCO1911", "C1911", "1911", "Cisco 1911"],
+    kind: "router",
+    family: "Cisco 1900 ISR G2",
+    title: "Cisco 1911 Integrated Services Router",
+    sourceLabel: "Cisco 1900 Series Integrated Services Router Hardware Installation Guide",
+    sourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/access/1900/hardware/installation/guide/1900_HIG/19inst.html",
+    downlinkPorts: 2,
+    downlinkDescription: "2 x integrated Gigabit Ethernet routed ports",
+    uplinkDescription: "EHWIC / ISM expansion slots",
+    panelGroups: [],
+    routerGroups: [
+      { id: "control", label: "Console / AUX / USB", columns: 4, slotLabels: ["CON", "AUX", "USB", "USB"] },
+      { id: "ports", label: "Integrated GE routed ports", columns: 2, portNames: ["Gi0/0", "Gi0/1"] },
+      { id: "modules", label: "Expansion slots", columns: 3, slotLabels: ["EHWIC 0", "EHWIC 1", "ISM"] }
+    ]
+  },
+  {
     sku: "CISCO1941/K9",
-    aliases: ["CISCO1941", "C1941", "1941", "CISCO1900", "C1900", "1900", "Cisco 1900 Series"],
+    aliases: ["CISCO1941", "C1941", "1941", "CISCO1900", "C1900", "1900"],
     kind: "router",
     family: "Cisco 1900 ISR G2",
     title: "Cisco 1941 Integrated Services Router",
     sourceLabel: "Cisco 1900 Series Integrated Services Routers Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/routers/1900-series-integrated-services-routers-isr/data_sheet_c78_556319.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/200001-300000/270001-280000/273001-274000/273452.eps/_jcr_content/renditions/273452.jpg",
+    officialImageAlt: "Cisco 1941 and Cisco 1941W back panel official hardware guide image",
+    officialImageSourceLabel: "Cisco 1900 Series ISR Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/access/1900/hardware/installation/guide/1900_HIG/19over.html",
+    officialImageKind: "hardwareGuide",
+    officialImageRackView: "rear",
     downlinkPorts: 2,
     downlinkDescription: "2 x integrated Gigabit Ethernet routed ports",
     uplinkDescription: "EHWIC / ISM expansion slots",
@@ -61,6 +95,12 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco 2800 Series Integrated Services Routers Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/dam/global/it_it/solutions/small-business/pdf/net_found/isr_2800ds-en.pdf",
+    officialImageUrl: "https://www.cisco.com/web/ANZ/assets/images/cisco2811back.gif",
+    officialImageAlt: "Cisco 2811 back panel official hardware view image",
+    officialImageSourceLabel: "Cisco 2800 Series Router Hardware View",
+    officialImageSourceUrl: "https://www.cisco.com/web/ANZ/cpp/refguide/hview/router/2800.html",
+    officialImageKind: "hardwareView",
+    officialImageRackView: "rear",
     downlinkPorts: 2,
     downlinkDescription: "2 x integrated Fast Ethernet routed ports",
     uplinkDescription: "WIC / HWIC / network module expansion",
@@ -80,6 +120,14 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco 2900 Series Integrated Services Routers Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/routers/2900-series-integrated-services-routers-isr/data_sheet_c78_553896.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/200001-300000/250001-260000/250001-251000/250971.eps/_jcr_content/renditions/250971.jpg",
+    officialImageAlt: "Cisco 2911 back panel official hardware guide image",
+    officialImageSourceLabel: "Cisco 2900 Series ISR Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/access/2900/hardware/installation/guide/Hardware_Installation_Guide/Overview.html",
+    officialImageKind: "hardwareGuide",
+    officialImageRackView: "rear",
     downlinkPorts: 3,
     downlinkDescription: "3 x integrated Gigabit Ethernet routed ports",
     uplinkDescription: "EHWIC / service module slots",
@@ -99,6 +147,14 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst IR1800 Rugged Series Routers",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-ir1800-rugged-series-routers/nb-06-cat-ir1800-rugged-ser-rout-ds-cte-en.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/450001-460000/455001-456000/455369.jpg",
+    officialImageAlt: "Cisco IR1821 router official device photo",
+    officialImageSourceLabel: "Cisco Catalyst IR1800 Rugged Series Router Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/access/IR1800/hig/b-ir1800-hig/m-pview.html",
+    officialImageKind: "devicePhoto",
+    officialImageRackView: "product",
     downlinkPorts: 5,
     downlinkDescription: "4 x GE LAN and 1 x combo GE WAN routed ports",
     uplinkDescription: "Pluggable cellular / Wi-Fi / SSD slots",
@@ -119,6 +175,14 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco 4000 Family Integrated Services Router Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/routers/4000-series-integrated-services-routers-isr/data_sheet-c78-732542.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/390001-400000/391001-392000/391462.eps/_jcr_content/renditions/391462.jpg",
+    officialImageAlt: "Cisco ISR 4331 front panel official hardware guide image",
+    officialImageSourceLabel: "Cisco ISR 4400 and 4300 Series Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/access/4400/hardware/isr4400/isr4400_chassis.html",
+    officialImageKind: "hardwareGuide",
+    officialImageRackView: "io",
     downlinkPorts: 3,
     downlinkDescription: "3 onboard GE WAN/LAN ports",
     uplinkDescription: "2 NIM slots and 1 SM slot",
@@ -138,6 +202,14 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 8200 Series Edge Platforms Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356774.jpg",
+    officialImageAlt: "Cisco Catalyst 8200 Series I/O side official hardware guide image",
+    officialImageSourceLabel: "Cisco Catalyst 8200 Series Edge Platforms Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8200/hardware_install/b-cat-8200-series-edge-platforms-hig/m-overview-c8200.html",
+    officialImageKind: "hardwareGuide",
+    officialImageRackView: "io",
     downlinkPorts: 4,
     downlinkDescription: "4 embedded Layer 3 Ethernet ports",
     uplinkDescription: "NIM / PIM expansion",
@@ -157,6 +229,14 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 8300 Series Edge Platforms Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356977.jpg",
+    officialImageAlt: "Cisco Catalyst 8300-1N1S I/O side official hardware guide image",
+    officialImageSourceLabel: "Cisco Catalyst 8300 Series Edge Platforms Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8300/hardware_installation/b-catalyst-8300-series-edge-platforms-hig/m-overview.html",
+    officialImageKind: "hardwareGuide",
+    officialImageRackView: "io",
     downlinkPorts: 6,
     downlinkDescription: "4 x 1G and 2 x 10G embedded Layer 3 Ethernet ports",
     uplinkDescription: "NIM / SM expansion",
@@ -176,6 +256,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 2960 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/hardware/installation/guide/2960_hg/higover.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/200001-300000/200001-210000/204001-205000/204609.eps/_jcr_content/renditions/204609.jpg",
+    officialImageAlt: "Cisco Catalyst 2960-48TT-L front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100 Fast Ethernet ports",
     uplinkDescription: "2 x 10/100/1000 uplink ports",
@@ -192,6 +276,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 2960 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/hardware/installation/guide/2960_hg/higover.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/200001-300000/200001-210000/204001-205000/204607.eps/_jcr_content/renditions/204607.jpg",
+    officialImageAlt: "Cisco Catalyst 2960-24TT-L front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 24,
     downlinkDescription: "24 x 10/100 Fast Ethernet ports",
     uplinkDescription: "2 x 10/100/1000 uplink ports",
@@ -208,6 +296,12 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 2960-X Series Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-x-series-switches/data_sheet_c78-728232.html",
+    officialImageUrl: "https://www.cisco.com/en/US/i/300001-400000/340001-350000/346001-347000/346516.jpg",
+    officialImageAlt: "Cisco Catalyst 2960-X 48-port front panel official hardware guide image",
+    officialImageSourceLabel: "Cisco Catalyst 2960-X Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/en/US/docs/switches/lan/catalyst2960x/hardware/installation/guide/b_c2960x_hig_chapter_01.html",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 fixed uplink ports",
@@ -224,6 +318,12 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 2960-X Series Data Sheet",
     sourceUrl:
       "https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-x-series-switches/data_sheet_c78-728232.html",
+    officialImageUrl: "https://www.cisco.com/en/US/i/300001-400000/340001-350000/346001-347000/346516.jpg",
+    officialImageAlt: "Cisco Catalyst 2960-X front panel official hardware guide image",
+    officialImageSourceLabel: "Cisco Catalyst 2960-X Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/en/US/docs/switches/lan/catalyst2960x/hardware/installation/guide/b_c2960x_hig_chapter_01.html",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 24,
     downlinkDescription: "24 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 fixed uplink ports",
@@ -295,6 +395,22 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     ]
   },
   {
+    sku: "WS-C3750G-48TS-S",
+    aliases: ["C3750G-48TS", "WS-C3750G-48", "C3750G-48", "Catalyst 3750G Series", "3750G"],
+    family: "Catalyst 3750G",
+    title: "Cisco Catalyst 3750G 48-port Gigabit with 4 SFP uplinks",
+    sourceLabel: "Cisco Catalyst 3750 Switch Hardware Installation Guide",
+    sourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750/hardware/installation/guide/3750hig/HIGOVERV.html",
+    downlinkPorts: 48,
+    downlinkDescription: "48 x 10/100/1000 downlink ports",
+    uplinkDescription: "4 x SFP uplink slots",
+    panelGroups: [
+      { id: "downlinks", label: "1G downlinks", columns: 6, rows: 2, bankSize: 12, selector: "downlink" },
+      { id: "uplinks", label: "SFP uplinks", columns: 4, rows: 1, selector: "uplink" }
+    ]
+  },
+  {
     sku: "WS-C3750E-48TD-S",
     aliases: ["C3750E-48TD", "WS-C3750E-48", "C3750E-48"],
     family: "Catalyst 3750-E",
@@ -308,6 +424,22 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     panelGroups: [
       { id: "downlinks", label: "1G downlinks", columns: 6, rows: 2, bankSize: 12, selector: "downlink" },
       { id: "uplinks", label: "10G uplinks", columns: 2, rows: 1, selector: "uplink" }
+    ]
+  },
+  {
+    sku: "WS-C3750-48PS-S",
+    aliases: ["C3750-48PS", "WS-C3750-48", "C3750-48", "Catalyst 3750 48PS"],
+    family: "Catalyst 3750",
+    title: "Cisco Catalyst 3750 48-port 10/100 PoE with 4 SFP uplinks",
+    sourceLabel: "Cisco Catalyst 3750 Switch Hardware Installation Guide",
+    sourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750/hardware/installation/guide/3750hig/HIGOVERV.html",
+    downlinkPorts: 48,
+    downlinkDescription: "48 x 10/100 PoE downlink ports",
+    uplinkDescription: "4 x SFP uplink slots",
+    panelGroups: [
+      { id: "downlinks", label: "10/100 PoE downlinks", columns: 6, rows: 2, bankSize: 12, selector: "downlink" },
+      { id: "uplinks", label: "SFP uplinks", columns: 4, rows: 1, selector: "uplink" }
     ]
   },
   {
@@ -334,6 +466,13 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 3750-X and 3560-X Release Notes",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750x_3560x/software/release/15-0_2a_se6/release/notes/OL25302.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/200001-300000/250001-260000/251001-252000/251960.eps/_jcr_content/renditions/251960.jpg",
+    officialImageAlt: "Cisco Catalyst 3750-X and 3560-X front panel official hardware guide image",
+    officialImageSourceLabel: "Cisco Catalyst 3750-X and 3560-X Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750x_3560x/hardware/installation/guide/3750x_3560x_HIG/HIGOVERV.html",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "Network module slots",
@@ -350,6 +489,13 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 3750-X and 3560-X Release Notes",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750x_3560x/software/release/15-0_2a_se6/release/notes/OL25302.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/200001-300000/250001-260000/251001-252000/251960.eps/_jcr_content/renditions/251960.jpg",
+    officialImageAlt: "Cisco Catalyst 3750-X and 3560-X front panel official hardware guide image",
+    officialImageSourceLabel: "Cisco Catalyst 3750-X and 3560-X Hardware Installation Guide",
+    officialImageSourceUrl:
+      "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3750x_3560x/hardware/installation/guide/3750x_3560x_HIG/HIGOVERV.html",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "Network module slots",
@@ -366,6 +512,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 3650 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3650/hardware/installation/guide/Cat3650hig_book/HIGOVERV.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/340001-350000/347001-348000/347809.eps/_jcr_content/renditions/347809.jpg",
+    officialImageAlt: "Cisco Catalyst 3650 48-port front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 uplink ports",
@@ -382,6 +532,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 3650 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3650/hardware/installation/guide/Cat3650hig_book/HIGOVERV.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/340001-350000/347001-348000/347615.eps/_jcr_content/renditions/347615.jpg",
+    officialImageAlt: "Cisco Catalyst 3650 24-port front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 24,
     downlinkDescription: "24 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 uplink ports",
@@ -398,6 +552,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 3850 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3850/hardware/installation/guide/b_c3850_hig/b_c3850_hig_chapter_01.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/380001-390000/385001-386000/385446.jpg",
+    officialImageAlt: "Cisco Catalyst 3850 48-port front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "Network module slots",
@@ -414,6 +572,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 3850 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3850/hardware/installation/guide/b_c3850_hig/b_c3850_hig_chapter_01.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/380001-390000/385001-386000/385446.jpg",
+    officialImageAlt: "Cisco Catalyst 3850 front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 24,
     downlinkDescription: "24 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "Network module slots",
@@ -430,6 +592,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 9200 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9200/hardware/install/b-c9200-hig/product_overview.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/355001-356000/355820.jpg",
+    officialImageAlt: "Cisco Catalyst 9200L front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 x 1G/10G uplink ports",
@@ -446,6 +612,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 9200 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9200/hardware/install/b-c9200-hig/product_overview.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/355001-356000/355820.jpg",
+    officialImageAlt: "Cisco Catalyst 9200L front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 24,
     downlinkDescription: "24 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 x 1G/10G uplink ports",
@@ -464,7 +634,8 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9500/hardware/install/b_catalyst_9500_hig/9500_product-overview.html",
     officialImageUrl:
       "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356903.jpg",
-    officialImageAlt: "Cisco Catalyst 9500 C9500-32C official front panel diagram",
+    officialImageAlt: "Cisco Catalyst 9500 C9500-32C official front panel hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 32,
     downlinkDescription: "32 x 40G/100G QSFP28 ports",
     uplinkDescription: "Fixed 40G/100G QSFP28 front-panel ports",
@@ -481,6 +652,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 9300 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/hardware/install/b_c9300_hig/Product-overview.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356002.jpg",
+    officialImageAlt: "Cisco Catalyst 9300 C9300-48P front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "Network module slots",
@@ -497,6 +672,10 @@ export const ciscoDeviceTemplates: CiscoDeviceTemplate[] = [
     sourceLabel: "Cisco Catalyst 9300 Hardware Installation Guide",
     sourceUrl:
       "https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/hardware/install/b_c9300_hig/Product-overview.html",
+    officialImageUrl:
+      "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356224.jpg",
+    officialImageAlt: "Cisco Catalyst 9300L C9300L-48P-4X front panel official hardware guide image",
+    officialImageKind: "hardwareGuide",
     downlinkPorts: 48,
     downlinkDescription: "48 x 10/100/1000 PoE+ downlink ports",
     uplinkDescription: "4 fixed uplink ports",
